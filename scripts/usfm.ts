@@ -253,7 +253,9 @@ export function parseUsfm(src: string): ParsedBook {
       if (name === "b") pendingPara = true;
     }
   }
-  handleText(src.slice(last).replace(/^ /, ""));
+  const tail = src.slice(last);
+  // one space after an opening marker is just the delimiter, but a space after a closing marker is real text
+  handleText(pending && !(pending as { close: boolean }).close ? tail.replace(/^ /, "") : tail);
   if (mode === "title" && chapter) (chapter as ParsedChapter).title = titleBuf.replace(/\s+/g, " ").trim();
 
   function emitMarker(ch: string) {

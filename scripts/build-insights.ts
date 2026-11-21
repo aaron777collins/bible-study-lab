@@ -2,17 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { OUT, TRANSLATIONS, allBooks, writeJson } from "./lib.ts";
-
-const STOP = new Set(
-  "a about above after again against all am an and any are as at be because been before being below between both but by can could did do does doing down during each few for from further had has have having he her here hers herself him himself his how i if in into is it its itself let me more most my myself no nor not of off on once only or other our ours ourselves out over own same she should so some such than that the their theirs them themselves then there these they this those through to too under until up us very was we were what when where which while who whom why will with would you your yours yourself yourselves unto thou thee thy thine ye hath doth shall shalt art wilt hast saith said say lo yea nay o oh also upon thereof therefore wherefore hath neither whose whosoever whoso".split(" "),
-);
-const MARK = /[-]/g;
-const tokenize = (s: string) =>
-  s
-    .replace(MARK, "")
-    .toLowerCase()
-    .replace(/[’‘]/g, "'")
-    .match(/[a-z]+(?:'[a-z]+)?/g) ?? [];
+import { distinctiveWords, tokenize, topWords } from "./insights-math.ts";
 
 fs.rmSync(path.join(OUT, "insights"), { recursive: true, force: true });
 const books = allBooks();
@@ -61,20 +51,14 @@ for (const tr of TRANSLATIONS) {
   const bibleTotal = total.reduce((a, c) => a + c, 0);
   books.forEach((b, i) => {
     const m = counts[i];
-    const top = [...m].filter(([w]) => !STOP.has(w) && w.length > 2).sort((a, c) => c[1] - a[1] || a[0].localeCompare(c[0])).slice(0, 30);
-    const minCount = total[i] < 5000 ? 3 : 5;
-    const distinct = [...m]
-      .filter(([w, c]) => !STOP.has(w) && w.length > 2 && c >= minCount)
-      .map(([w, c]) => [w, c, (c / total[i]) * Math.log(66 / (df.get(w) ?? 1))] as [string, number, number])
-      .sort((a, c) => c[2] - a[2] || a[0].localeCompare(c[0]))
-      .slice(0, 20)
-      .map(([w, c, s]) => [w, c, Math.round(s * 1e6) / 100]);
+    const top = topWords(m, 30);
+    const distinct = distinctiveWords(m, total[i], df, 66, total[i] < 5000 ? 3 : 5);
     (result[b.osis] ??= {})[tr.id] = { words: total[i], verses: verses[i], chapterWords: chapterWords[i], top, distinct };
   });
   bibleTop[tr.id] = {
     words: bibleTotal,
     unique: bible.size,
-    top: [...bible].filter(([w]) => !STOP.has(w) && w.length > 2).sort((a, c) => c[1] - a[1] || a[0].localeCompare(c[0])).slice(0, 60),
+    top: topWords(bible, 60),
   };
 }
 for (const [osis, v] of Object.entries(result)) writeJson(path.join(OUT, "insights", `${osis}.json`), v);
