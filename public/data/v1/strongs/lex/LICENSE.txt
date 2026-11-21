@@ -1,0 +1,9 @@
+These lexicon files are derived from the Open Scriptures Strong's dictionaries
+(https://github.com/openscriptures/strongs), which carry this notice:
+  Greek: "Copyright 2009, Open Scriptures. CC-BY-SA. Derived from XML."
+  Hebrew: "Copyright 2010, Open Scriptures. CC-BY-SA."
+The underlying text is Strong's Exhaustive Concordance (James Strong, 1890 and 1894), in the public domain.
+The XML edition was prepared by Ulrik Petersen (Greek) and by David Troidl and others (Hebrew).
+These files are therefore shared under Creative Commons Attribution-ShareAlike (CC BY-SA 3.0):
+https://creativecommons.org/licenses/by-sa/3.0/
+The rest of this app is released under the MIT license.
