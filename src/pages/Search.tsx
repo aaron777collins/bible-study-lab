@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
-import { ArrowRight, Hash, Search as SearchIcon } from "lucide-react";
+import { ArrowRight, Hash, Loader2, Search as SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Highlighted } from "@/components/Highlighted";
 import { Page } from "@/components/Page";
@@ -138,10 +137,12 @@ export function Component() {
       {hasText && (
         <section aria-label="Results" aria-live="polite" aria-busy={res.loading}>
           {res.loading ? (
-            <div className="max-w-3xl">
-              <p className="mb-3 text-sm text-muted-foreground">Preparing the search. The first search in a visit takes a few seconds.</p>
-              <Skeleton className="mb-2 h-16 w-full" />
-              <Skeleton className="mb-2 h-16 w-full" />
+            <div className="flex max-w-3xl items-start gap-3 rounded-md border bg-surface p-4" role="status" data-testid="search-loading">
+              <Loader2 className="mt-0.5 size-5 shrink-0 text-lapis motion-safe:animate-spin" aria-hidden="true" />
+              <p className="text-sm">
+                <span className="block font-medium text-foreground">Searching for &ldquo;{q}&rdquo;</span>
+                <span className="text-muted-foreground">The first search in a visit takes a few seconds while the text is prepared. Later searches are instant.</span>
+              </p>
             </div>
           ) : res.error ? (
             <p role="alert" className="text-destructive">The search could not run. If you are offline, open the app once while online so the text can be saved, then try again.</p>

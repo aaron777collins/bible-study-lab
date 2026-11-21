@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -92,20 +92,36 @@ function BookBars({ perVerse }: { perVerse: boolean }) {
 
 function BookFlows() {
   const s = useAsync(loadSummary, []);
+  const box = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
+  const [pick, setPick] = useState<{ r: number; c: number } | null>(null);
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const on = () => setWidth(el.clientWidth);
+    on();
+    const ro = new ResizeObserver(on);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [s.data]);
   if (!s.data) return <Skeleton className="h-96 w-full" />;
   const m = s.data.matrix;
   const max = Math.max(...m);
-  const cell = 9;
-  const pad = 44;
+  // Labels are 11px, so a cell is never smaller than 12px. A wide card scales the grid up to fill it; a narrow one scrolls.
+  const padL = 48;
+  const padT = 48;
+  const cell = Math.min(24, Math.max(12, Math.floor(((width || 0) - 16 - padL - 2) / 66)));
   const top = [...m.map((v, i) => ({ v, i }))].filter((x) => x.v > 0 && Math.floor(x.i / 66) !== x.i % 66).sort((a, b) => b.v - a.v).slice(0, 20);
+  const readout = pick ? `${BOOKS[pick.r].name} to ${BOOKS[pick.c].name}: ${m[pick.r * 66 + pick.c].toLocaleString()} votes` : "Hover or tap a square to see the books and the number of votes.";
   return (
     <div className="grid gap-4">
-      <div className="max-w-full overflow-x-auto rounded-md border bg-surface p-2">
-        <svg width={pad + 66 * cell + 2} height={pad + 66 * cell + 2} role="img" aria-label="Heat grid of cross reference votes from each book (rows) to each book (columns). A table with the strongest pairs follows." style={{ display: "block" }}>
+      <p className="sticky top-14 z-10 min-h-6 bg-page py-1 text-sm font-medium" role="status" data-testid="flow-readout">{readout}</p>
+      <div ref={box} className="max-w-full overflow-x-auto rounded-md border bg-surface p-2">
+        <svg width={padL + 66 * cell + 2} height={padT + 66 * cell + 2} role="img" aria-label="Heat grid of cross reference votes from each book (rows) to each book (columns). A table with the strongest pairs follows." style={{ display: "block" }} onPointerLeave={() => setPick(null)}>
           {BOOKS.map((b, i) => (
-            <g key={b.osis}>
-              {(i % 3 === 0) && <text x={pad + i * cell + cell / 2} y={pad - 6} fontSize={7} textAnchor="start" transform={`rotate(-60 ${pad + i * cell + cell / 2} ${pad - 6})`} fill="var(--ink-muted)">{b.osis}</text>}
-              {(i % 3 === 0) && <text x={pad - 4} y={pad + i * cell + 7} fontSize={7} textAnchor="end" fill="var(--ink-muted)">{b.osis}</text>}
+            <g key={b.osis} fontSize={11} fill="var(--ink-muted)" fontWeight={pick && (pick.r === i || pick.c === i) ? 700 : 400}>
+              <text x={padL + i * cell + cell / 2 + 4} y={padT - 5} textAnchor="start" transform={`rotate(-90 ${padL + i * cell + cell / 2 + 4} ${padT - 5})`}>{b.osis}</text>
+              <text x={padL - 4} y={padT + i * cell + cell / 2 + 4} textAnchor="end">{b.osis}</text>
             </g>
           ))}
           {Array.from({ length: 66 * 66 }, (_, k) => {
@@ -113,14 +129,25 @@ function BookFlows() {
             const r = Math.floor(k / 66);
             const c = k % 66;
             return (
-              <rect key={k} x={pad + c * cell} y={pad + r * cell} width={cell - 0.5} height={cell - 0.5} fill={v > 0 ? shade(logScale(v, max)) : "var(--wash)"}>
+              <rect
+                key={k}
+                x={padL + c * cell}
+                y={padT + r * cell}
+                width={cell - 1}
+                height={cell - 1}
+                fill={v > 0 ? shade(logScale(v, max)) : "var(--wash)"}
+                stroke={pick && pick.r === r && pick.c === c ? "var(--ink)" : undefined}
+                strokeWidth={pick && pick.r === r && pick.c === c ? 2 : undefined}
+                onPointerEnter={() => setPick({ r, c })}
+                onClick={() => setPick({ r, c })}
+              >
                 <title>{`${BOOKS[r].name} to ${BOOKS[c].name}: ${v.toLocaleString()} votes`}</title>
               </rect>
             );
           })}
         </svg>
       </div>
-      <p className="text-sm text-muted-foreground">Rows are the book a link starts in, columns are where it points. The bright diagonal is links inside one book. Hover a square for the numbers.</p>
+      <p className="text-sm text-muted-foreground">Rows are the book a link starts in, columns are where it points. The bright diagonal is links inside one book. Hover or tap a square for the numbers.</p>
       <details className="rounded-md border">
         <summary className="cursor-pointer px-4 py-3 font-medium">Show as a list</summary>
         <div className="overflow-x-auto px-4 pb-4">

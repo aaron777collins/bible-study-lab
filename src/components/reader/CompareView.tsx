@@ -18,7 +18,7 @@ export function CompareView({ book, chapter, columns, selection, onVerse }: { bo
   return (
     <div data-verses role="group" aria-label={`${BOOKS[book].name} chapter ${chapter}, compared`} className="max-w-5xl">
       {title && <p className="psalm-title scripture">{title}</p>}
-      <div className="sticky top-[7.1rem] z-10 hidden gap-4 border-b bg-page/95 py-2 text-sm font-semibold text-muted-foreground md:grid" style={{ gridTemplateColumns: `2.5rem repeat(${columns.length}, minmax(0, 1fr))` }}>
+      <div className="sticky top-[7rem] z-10 hidden gap-4 border-b bg-page py-2 text-sm font-semibold text-muted-foreground md:grid" style={{ gridTemplateColumns: `2.5rem repeat(${columns.length}, minmax(0, 1fr))` }}>
         <span aria-hidden="true" />
         {columns.map((c) => (
           <span key={c.tr}>{translationById(c.tr).name}</span>

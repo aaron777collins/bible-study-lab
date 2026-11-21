@@ -58,3 +58,65 @@ test("a toast goes away by itself even with the pointer resting on it", async ({
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await expect(page.locator("[data-sonner-toast]")).toHaveCount(0, { timeout: 9000 });
 });
+
+test.describe("fixes from the visual review", () => {
+  test("the reader toolbar stays on one row at 390px, even for Psalms 119", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("./#/read/psalms/119");
+    await page.locator("#v1 button[data-vbtn]").waitFor();
+    const bar = page.locator(".sticky.top-14").first();
+    const ys = await bar.locator("> *").evaluateAll((els) => els.filter((e) => (e as HTMLElement).offsetParent).map((e) => { const r = e.getBoundingClientRect(); return Math.round((r.top + r.bottom) / 2); }));
+    expect(Math.max(...ys) - Math.min(...ys), "all toolbar controls share a row").toBeLessThanOrEqual(2);
+    await expect(page.getByRole("button", { name: /^Psalms 119\./ })).toContainText("Psalms 119");
+  });
+
+  test("a word's comma stays on the line with the word", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("./#/read/john/3?ow=1");
+    await page.locator("#v1 button[data-vbtn]").waitFor();
+    const bad = await page.locator("#v1 .strongs-word").evaluateAll((els) => {
+      let n = 0;
+      for (const el of els) {
+        const next = el.nextSibling;
+        const t = next && next.nodeType === 3 ? next.textContent ?? "" : (next as HTMLElement | null)?.textContent ?? "";
+        if (!/^[,.:;!?]/.test(t)) continue;
+        const range = document.createRange();
+        range.setStart(next!, 0);
+        range.setEnd(next!, 1);
+        const a = el.getBoundingClientRect();
+        const b = range.getBoundingClientRect();
+        if (Math.abs(a.bottom - b.bottom) > 4 && a.right < b.left === false) n++;
+      }
+      return n;
+    });
+    expect(bad).toBe(0);
+  });
+
+  test("the compare column header hides the text scrolling under it", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("./#/read/john/3?with=web,asv");
+    await page.locator("#v1 button[data-vbtn]").waitFor();
+    const header = page.locator("[data-verses] .sticky").first();
+    const bg = await header.evaluate((e) => getComputedStyle(e).backgroundColor);
+    expect(bg).not.toMatch(/rgba\(.*, 0(\.\d+)?\)|transparent/);
+    expect(bg).not.toMatch(/\/ 0?\.\d+\)/);
+  });
+
+  test("book flows label every row at 11px or more and show a readout", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("./#/insights?tab=flows");
+    const svg = page.locator("svg[role=img]").first();
+    await expect(svg).toBeVisible();
+    const sizes = await svg.locator("text").evaluateAll((els) => els.map((e) => parseFloat(getComputedStyle(e).fontSize)));
+    expect(sizes.length).toBe(132);
+    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(11);
+    await svg.locator("rect").nth(66 * 3 + 39).dispatchEvent("click");
+    await expect(page.getByTestId("flow-readout")).toContainText(/ to .*: .* votes/);
+  });
+
+  test("search shows a message, then results", async ({ page }) => {
+    await page.goto("./#/search?q=living%20water");
+    await expect(page.getByTestId("result-count")).toBeVisible({ timeout: 30000 });
+    await expect(page.locator("section[aria-label=Results] a").first()).toBeVisible();
+  });
+});

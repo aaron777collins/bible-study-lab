@@ -167,9 +167,12 @@ function Tokens({ tokens, notes, onStrong, active }: { tokens: Token[]; notes?: 
       const [word, num] = t;
       const cls = [wj ? "wj" : "", add ? "added" : "", nd ? "nd" : ""].join(" ").trim();
       out.push(
-        <button
+        // A span with a button role, not a <button>: a real button is an atomic inline, so a line can break between it
+        // and the comma or colon that follows. A span keeps the punctuation on the same line as its word.
+        <span
           key={`${i}-w`}
-          type="button"
+          role="button"
+          tabIndex={0}
           className={`strongs-word ${cls}`}
           aria-label={`${word}, Strong's ${num}`}
           style={active === num ? { background: "var(--lapis-wash)" } : undefined}
@@ -177,9 +180,16 @@ function Tokens({ tokens, notes, onStrong, active }: { tokens: Token[]; notes?: 
             e.stopPropagation();
             onStrong(num);
           }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              e.stopPropagation();
+              onStrong(num);
+            }
+          }}
         >
           {word}
-        </button>,
+        </span>,
       );
     }
   });

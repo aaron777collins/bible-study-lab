@@ -302,10 +302,10 @@ export function Component() {
       )}
       <div className="min-w-0 flex-1 px-4 pb-24 pt-4 md:px-8 md:pt-6">
         <NotesBanner className="mb-4 max-w-2xl" />
-        <div className="no-print sticky top-14 z-20 -mx-4 mb-4 flex flex-wrap items-center gap-2 border-b bg-page/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
+        <div className="no-print sticky top-14 z-20 -mx-4 mb-4 flex flex-nowrap items-center gap-2 sm:flex-wrap border-b bg-page/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
           {!xl && (
-            <Button variant="outline" onClick={() => setNavOpen(true)} className="gap-2 font-semibold" aria-label={`${BOOKS[book].name} ${chapter}. Change book or chapter`}>
-              <Library aria-hidden="true" /> {BOOKS[book].name} {chapter}
+            <Button variant="outline" onClick={() => setNavOpen(true)} className="min-w-0 shrink gap-2 px-3 font-semibold sm:px-4" aria-label={`${BOOKS[book].name} ${chapter}. Change book or chapter`}>
+              <Library className="hidden shrink-0 sm:block" aria-hidden="true" /> <span className="truncate">{BOOKS[book].name} {chapter}</span>
             </Button>
           )}
           {xl && <h1 className="mr-2 text-xl">{BOOKS[book].name} {chapter}</h1>}
@@ -318,7 +318,7 @@ export function Component() {
             </Button>
           </div>
           <Select value={tr} onValueChange={(t) => update({ t, with: withList.filter((w) => w !== t).join(",") || null, ow: t === "kjv" ? sp.get("ow") : null })}>
-            <SelectTrigger className="h-11 w-[5.75rem] sm:h-10 sm:w-[7.5rem]" aria-label="Translation">
+            <SelectTrigger className="h-11 w-[4.75rem] shrink-0 sm:h-10 sm:w-[7.5rem]" aria-label="Translation">
               <SelectValue>{translationById(tr).short}</SelectValue>
             </SelectTrigger>
             <SelectContent>
@@ -331,7 +331,7 @@ export function Component() {
           </Select>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant={compare ? "default" : "outline"} className="gap-2" aria-label="Compare translations">
+              <Button variant={compare ? "default" : "outline"} className="shrink-0 gap-2" aria-label="Compare translations">
                 <Columns2 aria-hidden="true" /> <span className="hidden sm:inline">Compare</span>
               </Button>
             </PopoverTrigger>
@@ -351,7 +351,7 @@ export function Component() {
               <Label htmlFor="ow" className="text-sm">Original words</Label>
             </div>
           )}
-          <div className="ml-auto flex items-center gap-1">
+          <div className="ml-auto flex shrink-0 items-center gap-1">
             {speechSupported() && !compare && (
               aloud === "off" ? (
                 <Button variant="ghost" size="icon" onClick={startAloud} aria-label="Read this chapter aloud">
