@@ -57,3 +57,17 @@ test("no page errors on the main routes", async ({ page }) => {
   }
   expect(problems).toEqual([]);
 });
+
+test("the app makes no requests to other sites", async ({ page }) => {
+  const origin = new URL(page.url() === "about:blank" ? "http://localhost:4173" : page.url()).origin;
+  const foreign: string[] = [];
+  page.on("request", (r) => {
+    const u = new URL(r.url());
+    if (u.protocol.startsWith("http") && u.origin !== "http://localhost:4173" && u.origin !== origin) foreign.push(r.url());
+  });
+  for (const r of ["./", "./#/read/john/3?v=16", "./#/explore", "./#/search?q=love", "./#/insights", "./#/settings"]) {
+    await page.goto(r);
+    await page.waitForLoadState("networkidle");
+  }
+  expect(foreign).toEqual([]);
+});

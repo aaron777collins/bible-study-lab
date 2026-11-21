@@ -1,0 +1,12 @@
+Versification report: differences from KJV numbering (chapter:verse counts)
+
+== kjv: 31102 non-empty verses
+
+== web: 31103 non-empty verses
+  Rom 14: 26 verses, KJV has 23
+  Rom 16: 25 verses, KJV has 27
+
+== asv: 31102 non-empty verses
+
+== ylt: 31102 non-empty verses
+

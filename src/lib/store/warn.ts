@@ -6,9 +6,27 @@ interface WarnState {
   open: boolean;
   /** set by the dialog component so tests and headless use are never blocked */
   registered: boolean;
+  /** set by the app shell: a dialog is coming, so the first save waits for it instead of skipping the warning */
+  uiExpected: boolean;
   resolve: (() => void) | null;
 }
-export const useWarn = create<WarnState>(() => ({ open: false, registered: false, resolve: null }));
+export const useWarn = create<WarnState>(() => ({ open: false, registered: false, uiExpected: false, resolve: null }));
+
+/** Wait until the warning dialog has mounted, but never for long. */
+function dialogReady(timeoutMs = 8000): Promise<void> {
+  if (useWarn.getState().registered || !useWarn.getState().uiExpected) return Promise.resolve();
+  return new Promise((resolve) => {
+    const timer = setTimeout(done, timeoutMs);
+    const unsub = useWarn.subscribe((s) => {
+      if (s.registered) done();
+    });
+    function done() {
+      clearTimeout(timer);
+      unsub();
+      resolve();
+    }
+  });
+}
 
 let pending: Promise<void> | null = null;
 
@@ -23,6 +41,7 @@ export function guardWrite(): Promise<void> {
     if (!db) return;
     const meta = await readMeta();
     if (meta.warnedAt) return;
+    await dialogReady();
     if (useWarn.getState().registered) {
       await new Promise<void>((resolve) => useWarn.setState({ open: true, resolve }));
     }

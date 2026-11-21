@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Button } from "@/components/ui/button";
 import { Logo } from "./Logo";
 import { useCommandMenu } from "@/lib/commandStore";
+import { useWarn } from "@/lib/store/warn";
 import { ThemeToggle } from "./ThemeToggle";
 import { readPath } from "@/lib/nav";
 import { usePrefs, resolveTheme } from "@/lib/prefs";
@@ -63,6 +64,10 @@ export function Layout() {
   void theme;
   void resolveTheme;
   const reading = loc.pathname.startsWith("/read");
+
+  useEffect(() => {
+    useWarn.setState({ uiExpected: true });
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
