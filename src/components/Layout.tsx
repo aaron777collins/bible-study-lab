@@ -82,9 +82,9 @@ export function Layout() {
               ))}
             </nav>
             <div className="ml-auto flex items-center gap-1">
-              <Button variant="outline" size="sm" className="hidden gap-2 text-muted-foreground md:inline-flex" onClick={() => setOpen(true)} aria-label="Search or go to a verse">
+              <Button variant="outline" size="sm" className="hidden gap-2 text-muted-foreground md:inline-flex" onClick={() => setOpen(true)}>
                 <Search aria-hidden="true" /> Search
-                <kbd className="ml-4 rounded border bg-wash px-1.5 text-xs">Ctrl K</kbd>
+                <kbd className="ml-4 rounded border bg-wash px-1.5 text-xs" aria-hidden="true">Ctrl K</kbd>
               </Button>
               <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen(true)} aria-label="Search or go to a verse">
                 <Search aria-hidden="true" />

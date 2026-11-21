@@ -153,16 +153,16 @@ function ChapterHeat({ density }: { density: boolean }) {
       <div className="max-h-[70dvh] max-w-full overflow-auto rounded-md border bg-surface" tabIndex={0} role="region" aria-label="Chapter heat map, scrolls sideways">
         <div className="inline-block min-w-full p-2">
           {BOOKS.map((b, bi) => (
-            <div key={b.osis} className="flex items-center" style={{ height: 17 }}>
-              <span className="sticky left-0 z-10 w-24 shrink-0 bg-surface pr-2 text-right text-[11px] text-muted-foreground">{b.name}</span>
+            <div key={b.osis} className="flex items-center" style={{ height: 26 }}>
+              <span className="sticky left-0 z-10 w-28 shrink-0 bg-surface pr-2 text-right text-xs text-muted-foreground">{b.name}</span>
               {data.vals[bi].map((v, ci) => (
                 <Link
                   key={ci}
                   to={readPath(bi, ci + 1)}
                   aria-label={`${b.name} ${ci + 1}, ${density ? Math.round(v) : v.toLocaleString()} ${density ? "votes per verse" : "votes"}`}
                   title={`${b.name} ${ci + 1}: ${density ? v.toFixed(1) + " per verse" : v.toLocaleString() + " votes"}`}
-                  className="mr-px block shrink-0 rounded-[2px]"
-                  style={{ width: 13, height: 15, background: v > 0 ? shade(logScale(v, data.max)) : "var(--wash)" }}
+                  className="mr-0.5 block shrink-0 rounded-[3px]"
+                  style={{ width: 24, height: 24, background: v > 0 ? shade(logScale(v, data.max)) : "var(--wash)" }}
                 />
               ))}
             </div>

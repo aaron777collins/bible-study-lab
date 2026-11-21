@@ -156,26 +156,19 @@ export function Component() {
               {scope === "all" || scope === "ot" || scope === "nt" ? (
                 <div className="mb-6 max-w-4xl">
                   <h2 className="mb-1 text-base">Where it appears</h2>
-                  <div className="flex h-20 items-end gap-px" role="group" aria-label="Matches in each book. Choose a bar to search only that book.">
+                  <div className="flex h-20 items-end gap-px" role="img" aria-label="Number of matches in each book, Genesis to Revelation. The list below has the same numbers.">
                     {BOOKS.map((b, i) => {
                       const n = res.data!.byBook[i];
                       return (
-                        <button
-                          key={b.osis}
-                          type="button"
-                          className="group relative flex h-full min-w-0 flex-1 items-end"
-                          onClick={() => set({ scope: b.osis })}
-                          aria-label={`${b.name}: ${n} ${n === 1 ? "match" : "matches"}`}
-                          title={`${b.name}: ${n}`}
-                        >
+                        <span key={b.osis} title={`${b.name}: ${n}`} className="flex h-full min-w-0 flex-1 items-end" aria-hidden="true">
                           <span className="block w-full rounded-t-[2px]" style={{ height: n ? `${Math.max(6, (n / maxBook) * 100)}%` : "2px", background: n ? (b.testament === "ot" ? "var(--gilt)" : "var(--lapis)") : "var(--rule)" }} />
-                        </button>
+                        </span>
                       );
                     })}
                   </div>
                   <div className="mt-1 flex justify-between text-xs text-muted-foreground"><span>Genesis</span><span>Malachi | Matthew</span><span>Revelation</span></div>
-                  <details className="mt-2"><summary className="cursor-pointer text-sm">Show as a list</summary>
-                    <ul className="mt-2 grid grid-cols-2 gap-x-6 text-sm sm:grid-cols-3">{res.data.byBook.map((n, i) => n ? <li key={i}><button type="button" className="text-lapis underline" onClick={() => set({ scope: BOOKS[i].osis })}>{BOOKS[i].name}</button> {n}</li> : null)}</ul>
+                  <details className="mt-2" open><summary className="cursor-pointer text-sm">Matches by book. Choose a book to search only in it</summary>
+                    <ul className="mt-2 grid grid-cols-2 gap-x-6 text-sm sm:grid-cols-3">{res.data.byBook.map((n, i) => n ? <li key={i}><button type="button" className="min-h-6 text-lapis underline" onClick={() => set({ scope: BOOKS[i].osis })}>{BOOKS[i].name}</button> {n}</li> : null)}</ul>
                   </details>
                 </div>
               ) : (

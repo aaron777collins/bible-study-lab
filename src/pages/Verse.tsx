@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { BookOpen, Compass } from "lucide-react";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
@@ -105,14 +105,14 @@ export function Component() {
         <Breadcrumb className="mb-4">
           <BreadcrumbList>
             {trail.map((t, i) => (
-              <span key={`${t}-${i}`} className="contents">
+              <Fragment key={`${t}-${i}`}>
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
                     <Link to={`${connectionsPath(t)}?trail=${trail.slice(0, i).join(",")}`}>{formatVerseId(t, { short: true })}</Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
-              </span>
+              </Fragment>
             ))}
             <BreadcrumbItem>
               <BreadcrumbPage>{formatVerseId(id, { short: true })}</BreadcrumbPage>

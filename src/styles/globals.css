@@ -165,7 +165,7 @@
   h1 { font-size: 1.75rem; }
   h2 { font-size: 1.4375rem; }
   h3 { font-size: 1.1875rem; }
-  a { color: var(--lapis); text-underline-offset: 3px; }
+  a { color: var(--lapis); text-decoration-line: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
   button, [role="button"], a, input, select, textarea, summary {
     touch-action: manipulation;
   }
@@ -211,16 +211,24 @@
   box-shadow: inset 3px 0 0 var(--lapis);
 }
 .verse:focus-visible { outline-offset: 0; }
-.verse .vn {
+.verse .vn, .vnb {
+  display: inline;
   font-family: var(--font-ui);
   font-size: 0.68em;
   font-weight: 650;
   color: var(--lapis);
   vertical-align: 0.38em;
-  margin-right: 0.3em;
-  padding: 0 0.1em;
+  margin: 0 0.3em 0 0;
+  padding: 0.25em 0.2em;
   letter-spacing: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  border-radius: 3px;
+  line-height: 1;
 }
+.vnb:hover { background: var(--lapis-wash); }
+.vnb[aria-pressed="true"] { background: var(--lapis); color: var(--on-lapis); }
 .verse[data-hl] .vtext { padding: 0.05em 0.1em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 .verse[data-hl="gold"] .vtext { background: var(--hl-gold); }
 .verse[data-hl="sky"] .vtext { background: var(--hl-sky); }
@@ -239,7 +247,7 @@
 :root[data-redletter="off"] .wj { color: inherit; }
 .added { font-style: italic; }
 .nd { font-variant-caps: small-caps; letter-spacing: 0.03em; }
-.strongs-word { text-decoration: underline dotted var(--lapis); text-underline-offset: 4px; cursor: pointer; background: none; border: 0; padding: 0; font: inherit; color: inherit; }
+.strongs-word { display: inline; text-decoration: underline dotted var(--lapis); text-underline-offset: 4px; cursor: pointer; background: none; border: 0; padding: 0; font: inherit; color: inherit; }
 .strongs-word:hover { background: var(--lapis-wash); }
 .note-anchor { font-family: var(--font-ui); font-size: 0.7em; vertical-align: 0.4em; color: var(--lapis); background: none; border: 0; cursor: pointer; padding: 0 0.15em; }
 .chapter-numeral {

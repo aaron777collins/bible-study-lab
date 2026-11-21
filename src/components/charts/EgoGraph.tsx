@@ -54,7 +54,7 @@ export function EgoGraph({ nodes, edges, selected, onSelect, onCenter }: { nodes
             transform={`translate(${n.x},${n.y})`}
             role="button"
             tabIndex={0}
-            aria-label={`${formatVerseId(n.id)}${n.ring === 0 ? ", the center" : `, ${n.votes} votes`}. Press Enter to preview, Shift Enter to move here.`}
+            aria-label={`${label}, ${formatVerseId(n.id)}${n.ring === 0 ? ", the center" : `, ${n.votes} votes`}. Press Enter to preview, Shift Enter to move here.`}
             style={{ cursor: "pointer" }}
             onClick={() => onSelect(n.id)}
             onDoubleClick={() => onCenter(n.id)}

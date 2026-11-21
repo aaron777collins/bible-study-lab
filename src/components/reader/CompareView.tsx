@@ -29,33 +29,26 @@ export function CompareView({ book, chapter, columns, selection, onVerse }: { bo
           const selected = !!selection && n >= selection[0] && n <= selection[1];
           return (
             <li key={n}>
-              <div
-                id={`v${n}`}
-                data-verse={n}
-                role="button"
-                tabIndex={0}
-                aria-pressed={selected}
-                aria-label={`${BOOKS[book].name} ${chapter}:${n}, compare translations`}
-                data-selected={selected}
-                className="verse grid cursor-pointer gap-x-4 gap-y-1 border-b py-3 md:items-baseline"
-                style={{ gridTemplateColumns: undefined, display: "grid" }}
-                onClick={(e) => onVerse(n, e.shiftKey)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    onVerse(n, e.shiftKey);
-                  } else onVerseKeys(e);
-                }}
-              >
-                <div className="compare-row grid gap-x-4 gap-y-3" style={{ ["--cols" as string]: columns.length }}>
-                  <span className="vn scripture hidden text-right md:block" aria-hidden="true">{n}</span>
+              <div id={`v${n}`} data-verse={n} data-selected={selected} className="verse block cursor-pointer border-b py-3" onClick={(e) => { if (!(e.target as HTMLElement).closest("button, a")) onVerse(n, e.shiftKey); }}>
+                <div className="compare-row grid gap-x-4 gap-y-2">
+                  <button
+                    type="button"
+                    data-vbtn
+                    aria-pressed={selected}
+                    aria-label={`Verse ${n}, ${BOOKS[book].name} ${chapter}:${n}, compare translations`}
+                    className="vnb justify-self-start md:justify-self-end"
+                    onClick={(e) => { e.stopPropagation(); onVerse(n, e.shiftKey); }}
+                    onKeyDown={onVerseKeys}
+                  >
+                    {n}
+                  </button>
                   {columns.map((c) => {
                     const text = c.data?.v[n - 1] ?? "";
-                    const empty = !text.replace(/[-]/g, "").trim();
+                    const empty = !text.replace(/[\uE000-\uE006]/g, "").trim();
                     return (
                       <div key={c.tr} className="scripture min-w-0" style={{ fontSize: "calc(var(--scripture-size) * 0.94)" }}>
                         <span className="mr-2 text-xs font-semibold text-muted-foreground md:hidden" style={{ fontFamily: "var(--font-ui)" }}>
-                          {n} {translationById(c.tr).short}
+                          {translationById(c.tr).short}
                         </span>
                         {empty ? <em className="text-muted-foreground">Not in this translation.</em> : <MarkedText text={text} notes={c.notes.get(n)} />}
                       </div>

@@ -186,18 +186,26 @@ export function ArcCanvas({
     if (hit) onArcClick?.(hit);
   };
 
-  const onBandKey = (e: React.KeyboardEvent, i: number) => {
+  const onBandKey = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      const seg = segments[tabStop.current];
+      if (seg) {
+        e.preventDefault();
+        onOpenSegment(seg.key);
+      }
+      return;
+    }
     const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : e.key === "Home" ? -999 : e.key === "End" ? 999 : 0;
     if (!step) return;
     e.preventDefault();
-    const n = Math.max(0, Math.min(segments.length - 1, i + step));
+    const n = Math.max(0, Math.min(segments.length - 1, tabStop.current + step));
     tabStop.current = n;
-    (e.currentTarget.parentElement?.children[n] as HTMLElement | undefined)?.focus();
+    onFocusSegment(segments[n].key);
   };
 
   return (
-    <div className="grid gap-2">
-      <div ref={wrap} className="relative w-full select-none">
+    <div className="grid min-w-0 max-w-full gap-2">
+      <div ref={wrap} className="relative w-full min-w-0 select-none overflow-hidden">
         <canvas
           ref={canvas}
           role="img"
@@ -213,35 +221,42 @@ export function ArcCanvas({
             {tip.text}
           </div>
         )}
-        <div className="relative h-9 border-t" role="group" aria-label={`${label}: books, use the arrow keys to move`} onMouseLeave={() => onFocusSegment(null)}>
-          {segments.map((s, i) => {
+        <div
+          className="relative h-9 overflow-hidden border-t"
+          role="group"
+          tabIndex={0}
+          aria-label={`${label}: books. Use the left and right arrow keys to move between books and Enter to open one.`}
+          data-testid="arc-band"
+          onFocus={() => {
+            if (focusSegment === null) onFocusSegment(segments[tabStop.current]?.key ?? null);
+          }}
+          onBlur={() => onFocusSegment(null)}
+          onMouseLeave={() => onFocusSegment(null)}
+          onKeyDown={onBandKey}
+        >
+          {segments.map((s) => {
             const x1 = px(view, s.start);
             const x2 = px(view, s.end);
             if (x2 < -2 || x1 > width + 2) return null;
             const w = x2 - x1;
+            const active = focusSegment === s.key;
             return (
-              <button
+              <span
                 key={s.key}
-                type="button"
-                tabIndex={i === tabStop.current ? 0 : -1}
-                aria-label={s.label}
-                aria-pressed={focusSegment === s.key}
-                title={s.label}
-                className="absolute top-0 h-full overflow-hidden border-r px-0.5 text-center text-[11px] font-medium leading-9 outline-offset-[-2px]"
-                style={{ left: x1, width: Math.max(1, w), background: focusSegment === s.key ? "var(--lapis-wash)" : heat ? `color-mix(in oklab, var(--lapis) ${Math.round((heat[s.key] ?? 0) * 55)}%, var(--surface))` : s.testament === "ot" ? "var(--wash)" : "var(--surface)", color: "var(--ink)", borderColor: "var(--rule)" }}
+                aria-hidden="true"
+                className="absolute top-0 h-full cursor-pointer overflow-hidden border-r px-0.5 text-center text-[11px] font-medium leading-8"
+                style={{ left: x1, width: Math.max(1, w), background: active ? "var(--lapis-wash)" : s.testament === "ot" ? "var(--wash)" : "var(--surface)", color: "var(--ink)", borderColor: "var(--rule)" }}
                 onMouseEnter={() => onFocusSegment(s.key)}
-                onFocus={() => {
-                  tabStop.current = i;
-                  onFocusSegment(s.key);
-                }}
-                onBlur={() => onFocusSegment(null)}
                 onClick={() => onOpenSegment(s.key)}
-                onKeyDown={(e) => onBandKey(e, i)}
               >
                 {w > 92 ? s.label : w > 30 ? (heat ? s.short : osisOf(s)) : ""}
-              </button>
+                {heat && <span className="absolute inset-x-0 bottom-0 h-1.5" style={{ background: `color-mix(in oklab, var(--lapis) ${Math.round(8 + (heat[s.key] ?? 0) * 92)}%, var(--surface))` }} />}
+              </span>
             );
           })}
+        </div>
+        <div className="sr-only" aria-live="polite" role="status">
+          {focusSegment !== null ? segments.find((x) => x.key === focusSegment)?.label : ""}
         </div>
       </div>
       <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">

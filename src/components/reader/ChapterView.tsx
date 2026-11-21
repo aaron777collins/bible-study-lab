@@ -37,7 +37,7 @@ export function onVerseKeys(e: KeyboardEvent<HTMLElement>) {
   if (step === undefined && e.key !== "Home" && e.key !== "End") return;
   const root = e.currentTarget.closest("[data-verses]");
   if (!root) return;
-  const all = [...root.querySelectorAll<HTMLElement>("[data-verse]")];
+  const all = [...root.querySelectorAll<HTMLElement>("button[data-vbtn]")];
   const i = all.indexOf(e.currentTarget);
   let next = i + (step ?? 0);
   if (e.key === "Home") next = 0;
@@ -61,7 +61,7 @@ export function ChapterView(props: ChapterViewProps) {
     const selected = !!selection && n >= selection[0] && n <= selection[1];
     const hl = id >= 0 ? highlights.get(id) : undefined;
     const isEmpty = !plainOf(text).trim();
-    const label = `${bookName} ${chapter}:${n}${hl ? `, highlighted ${HIGHLIGHT_LABEL[hl]}` : ""}${noted.has(id) ? ", has a note" : ""}, ${isEmpty ? "not in this translation" : plainOf(text)}`;
+    const label = `Verse ${n}, ${bookName} ${chapter}:${n}${hl ? `, highlighted ${HIGHLIGHT_LABEL[hl]}` : ""}${noted.has(id) ? ", has a note" : ""}${isEmpty ? ", not in this translation" : ""}`;
     const notes = footnotes.get(n);
     const toks = tokens?.[n - 1];
     return (
@@ -69,26 +69,32 @@ export function ChapterView(props: ChapterViewProps) {
         key={n}
         id={`v${n}`}
         data-verse={n}
-        role="button"
-        tabIndex={0}
-        aria-pressed={selected}
-        aria-label={label}
         className="verse"
         data-selected={selected}
         data-hl={hl}
-        onClick={(e) => onVerse(n, e.shiftKey)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onVerse(n, e.shiftKey);
-          } else onVerseKeys(e);
+        onClick={(e) => {
+          if ((e.target as HTMLElement).closest("button, a")) return;
+          onVerse(n, e.shiftKey);
         }}
       >
-        {n === 1 ? <span className="sr-only">1 </span> : <span className="vn" aria-hidden="true">{n}</span>}
+        <button
+          type="button"
+          data-vbtn
+          className={n === 1 ? "vnb sr-only focus:not-sr-only" : "vnb"}
+          aria-pressed={selected}
+          aria-label={label}
+          onClick={(e) => {
+            e.stopPropagation();
+            onVerse(n, e.shiftKey);
+          }}
+          onKeyDown={onVerseKeys}
+        >
+          {n}
+        </button>
         {hl && <span className="hl-mark" data-c={hl} aria-hidden="true" />}
         <span className="vtext">
           {isEmpty ? (
-            <em className="text-muted-foreground">{notes ? "" : "This verse is not in this translation."}{notes ? <MarkedText text={""} notes={notes} /> : null}</em>
+            <em className="text-muted-foreground">{notes ? "" : "This verse is not in this translation."}{notes ? <MarkedText text={"\uE006"} notes={notes} /> : null}</em>
           ) : toks ? (
             <Tokens tokens={toks} notes={notes} onStrong={(s) => onStrong?.(s, n)} active={activeStrong ?? null} />
           ) : (
