@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { ChevronLeft, ChevronRight, Columns2, Copy, Headphones, Library, Link2, NotebookPen, Pause, SlidersHorizontal, Square, Highlighter, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";

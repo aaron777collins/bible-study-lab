@@ -10,7 +10,7 @@ export default function DeferredUi() {
     <>
       <FirstSaveDialog />
       <PwaPrompts />
-      <Toaster theme={theme} position="bottom-center" offset={24} mobileOffset={{ bottom: 140 }} />
+      <Toaster theme={theme} position="bottom-center" offset={{ bottom: 64 }} mobileOffset={{ bottom: "calc(120px + env(safe-area-inset-bottom))" }} />
     </>
   );
 }

@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollTabsList } from "@/components/ScrollTabsList";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Page } from "@/components/Page";
 import { MarkedText } from "@/components/VerseText";
@@ -266,13 +267,13 @@ export function Component() {
   return (
     <Page wide title="Insights" intro={<>What the {s.data ? s.data.positiveLinks.toLocaleString() : "345,000"} cross references say about the shape of Scripture: the most connected verses, which books lean on which, and the words each book returns to.</>}>
       <Tabs value={tab} onValueChange={(v) => set({ tab: v })}>
-        <TabsList className="h-auto w-full flex-wrap justify-start bg-wash">
-          <TabsTrigger value="verses" className="py-2.5">Top verses</TabsTrigger>
-          <TabsTrigger value="books" className="py-2.5">Books</TabsTrigger>
-          <TabsTrigger value="flows" className="py-2.5">Book flows</TabsTrigger>
-          <TabsTrigger value="chapters" className="py-2.5">Chapter heat map</TabsTrigger>
-          <TabsTrigger value="words" className="py-2.5">Words</TabsTrigger>
-        </TabsList>
+        <ScrollTabsList value={tab}>
+          <TabsTrigger value="verses">Top verses</TabsTrigger>
+          <TabsTrigger value="books">Books</TabsTrigger>
+          <TabsTrigger value="flows">Book flows</TabsTrigger>
+          <TabsTrigger value="chapters">Chapter heat map</TabsTrigger>
+          <TabsTrigger value="words">Words</TabsTrigger>
+        </ScrollTabsList>
         <TabsContent value="verses" className="mt-6 max-w-3xl">
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <h2 className="text-xl">Most referenced verses</h2>

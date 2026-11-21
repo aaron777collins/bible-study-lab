@@ -114,7 +114,7 @@ export function ChapterView(props: ChapterViewProps) {
         const isPoetry = p.every((n) => poetry.has(n)) && layout === "paragraphs";
         return (
           <p key={p[0]} className={`${isPoetry ? "poetry" : ""} ${layout === "verses" ? "mb-1" : "mb-4"}`}>
-            {i === 0 && <span className="chapter-numeral" aria-hidden="true">{chapter}</span>}
+            {i === 0 && !isPoetry && <span className="chapter-numeral" data-digits={String(chapter).length} aria-hidden="true">{chapter}</span>}
             {p.map((n) => (
               <Fragment key={n}>{verse(n)}</Fragment>
             ))}

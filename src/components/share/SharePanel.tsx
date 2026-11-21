@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Copy, FolderPlus, Image, Link2, Printer, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAsync } from "@/hooks/useAsync";

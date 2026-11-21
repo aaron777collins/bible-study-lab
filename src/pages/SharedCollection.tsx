@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { FolderPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";

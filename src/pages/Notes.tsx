@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Bookmark as BookmarkIcon, FolderOpen, Link2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollTabsList } from "@/components/ScrollTabsList";
 import { MarkedText } from "@/components/VerseText";
 import { NotesBanner } from "@/components/NotesBanner";
 import { BackupPanel } from "@/components/notes/BackupPanel";
@@ -95,14 +96,14 @@ export function Component() {
     <Page wide title="My notes" intro="Notes, prayers, highlights, bookmarks and collections. They are saved only in this browser, so export a copy now and then.">
       <NotesBanner className="mb-6 max-w-3xl" />
       <Tabs value={tab} onValueChange={(v) => setSp(new URLSearchParams({ tab: v }), { replace: true })}>
-        <TabsList className="h-auto w-full flex-wrap justify-start bg-wash">
-          <TabsTrigger value="notes" className="py-2.5">Notes {plainNotes.length || ""}</TabsTrigger>
-          <TabsTrigger value="prayers" className="py-2.5">Prayers {prayers.length || ""}</TabsTrigger>
-          <TabsTrigger value="highlights" className="py-2.5">Highlights {highlights.length || ""}</TabsTrigger>
-          <TabsTrigger value="bookmarks" className="py-2.5">Bookmarks {bookmarks.length || ""}</TabsTrigger>
-          <TabsTrigger value="collections" className="py-2.5">Collections {collections.length || ""}</TabsTrigger>
-          <TabsTrigger value="backup" className="py-2.5">Back up</TabsTrigger>
-        </TabsList>
+        <ScrollTabsList value={tab}>
+          <TabsTrigger value="notes">Notes {plainNotes.length || ""}</TabsTrigger>
+          <TabsTrigger value="prayers">Prayers {prayers.length || ""}</TabsTrigger>
+          <TabsTrigger value="highlights">Highlights {highlights.length || ""}</TabsTrigger>
+          <TabsTrigger value="bookmarks">Bookmarks {bookmarks.length || ""}</TabsTrigger>
+          <TabsTrigger value="collections">Collections {collections.length || ""}</TabsTrigger>
+          <TabsTrigger value="backup">Back up</TabsTrigger>
+        </ScrollTabsList>
 
         {(tab === "notes" || tab === "prayers") && (
           <div className="mt-4 max-w-3xl">
