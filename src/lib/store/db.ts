@@ -74,8 +74,8 @@ export function getDb(): Promise<IDBPDatabase<BslDB> | null> {
   return dbPromise;
 }
 
-/** For tests: forget the open connection. */
-export function resetDbForTests() {
+/** Forget the open connection, so the next call opens a fresh one. Used by tests and after deleting everything. */
+export function resetDb() {
   dbPromise = null;
   useStoreStatus.setState({ state: "loading", version: 0 });
 }

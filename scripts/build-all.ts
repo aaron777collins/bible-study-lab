@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { OUT, writeJson } from "./lib.ts";
 
-for (const step of ["build-canon", "build-text", "build-xref", "build-strongs", "build-topics", "build-insights", "build-votd", "build-plans"]) {
+for (const step of ["build-canon", "build-text", "build-xref", "build-strongs", "build-topics", "build-insights", "build-votd", "build-plans", "build-manifest"]) {
   console.log(`\n> ${step}`);
   execFileSync(process.execPath, ["--import", "tsx", path.join(import.meta.dirname, `${step}.ts`)], { stdio: "inherit" });
 }
