@@ -147,7 +147,7 @@ export function Layout() {
         <CommandMenu />
         <FirstSaveDialog />
         <PwaPrompts />
-        <Toaster position="bottom-center" offset={{ bottom: 88 }} mobileOffset={{ bottom: 88 }} />
+        <Toaster position="bottom-center" offset={24} mobileOffset={{ bottom: 140 }} />
         <ScrollRestoration getKey={(l) => l.pathname} />
       </div>
     </TooltipProvider>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { toast } from "sonner";
 import { Download, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -13,6 +13,7 @@ export function NotesBanner({ className = "" }: { className?: string }) {
   const meta = useMeta();
   const state = useStoreStatus((s) => s.state);
   const [hidden, setHidden] = useState(false);
+  const onNotesPage = useLocation().pathname === "/notes";
   if (state === "unavailable") {
     return (
       <Alert className={className} role="status">
@@ -38,9 +39,11 @@ export function NotesBanner({ className = "" }: { className?: string }) {
           >
             <Download aria-hidden="true" /> Export notes
           </Button>
-          <Button size="sm" variant="ghost" asChild>
-            <Link to="/notes">See my notes</Link>
-          </Button>
+          {!onNotesPage && (
+            <Button size="sm" variant="ghost" asChild>
+              <Link to="/notes">See my notes</Link>
+            </Button>
+          )}
           <Button size="icon-sm" variant="ghost" className="ml-auto" aria-label="Hide this reminder for now" onClick={() => setHidden(true)}>
             <X aria-hidden="true" />
           </Button>

@@ -130,7 +130,7 @@ export function Component() {
       </section>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
-        <section aria-label="Network" className="min-w-0 lg:order-1">
+        <section aria-label="Network" className="order-2 min-w-0 lg:order-1">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-xl">Network</h2>
             <div className="flex items-center gap-2">
@@ -154,7 +154,7 @@ export function Component() {
           )}
         </section>
 
-        <section aria-label="Ranked connections" className="min-w-0">
+        <section aria-label="Ranked connections" className="order-1 min-w-0 lg:order-2">
           <h2 className="mb-2 text-xl">Ranked connections</h2>
           <div className="mb-4 rounded-md border p-3">
             <LinkFilterBar value={filter} onChange={setFilter} groupBy={group} onGroupBy={(g) => setFlag("group", g)} />

@@ -28,12 +28,24 @@ export function EgoGraph({ nodes, edges, selected, onSelect, onCenter }: { nodes
       .force("radial", forceRadial<SimNode>((n) => (n.ring === 0 ? 0 : n.ring === 1 ? 155 : 240), W / 2, H / 2).strength(0.35))
       .stop();
     s.tick(300);
-    return { sim, byId };
+    // fit the picture to the nodes, whatever the layout did
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const n of sim) {
+      minX = Math.min(minX, (n.x ?? 0) - 40);
+      maxX = Math.max(maxX, (n.x ?? 0) + 40);
+      minY = Math.min(minY, (n.y ?? 0) - 26);
+      maxY = Math.max(maxY, (n.y ?? 0) + 34);
+    }
+    const box = { x: Math.min(minX, 0), y: Math.min(minY, 0), w: Math.max(maxX, W) - Math.min(minX, 0), h: Math.max(maxY, H) - Math.min(minY, 0) };
+    return { sim, byId, box };
   }, [nodes, edges]);
 
   const maxVotes = Math.max(1, ...edges.map((e) => e.votes));
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="group" aria-label="Network of connected verses. The same links are listed in text beside it." className="h-auto w-full max-w-full" data-testid="ego-graph">
+    <svg viewBox={`${layout.box.x} ${layout.box.y} ${layout.box.w} ${layout.box.h}`} role="group" aria-label="Network of connected verses. The same links are listed in text beside it." className="h-auto w-full max-w-full" data-testid="ego-graph">
       <g>
         {edges.map((e, i) => {
           const a = layout.byId.get(e.source);
