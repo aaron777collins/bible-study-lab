@@ -110,7 +110,7 @@ function BookFlows() {
   // Labels are 11px, so a cell is never smaller than 12px. A wide card scales the grid up to fill it; a narrow one scrolls.
   const padL = 48;
   const padT = 48;
-  const cell = Math.min(24, Math.max(12, Math.floor(((width || 0) - 16 - padL - 2) / 66)));
+  const cell = Math.min(28, Math.max(12, ((width || 0) - 16 - padL - 2) / 66));
   const top = [...m.map((v, i) => ({ v, i }))].filter((x) => x.v > 0 && Math.floor(x.i / 66) !== x.i % 66).sort((a, b) => b.v - a.v).slice(0, 20);
   const readout = pick ? `${BOOKS[pick.r].name} to ${BOOKS[pick.c].name}: ${m[pick.r * 66 + pick.c].toLocaleString()} votes` : "Hover or tap a square to see the books and the number of votes.";
   return (
