@@ -80,8 +80,8 @@ export function parseUsfm(src: string): ParsedBook {
   const chapters = new Map<number, ParsedChapter>();
   const re = /\\(\+?)([a-z]+[0-9]*)(\*?)/g;
 
-  let chapter: ParsedChapter | null = null;
-  let verse: ParsedVerse | null = null;
+  let chapter = null as ParsedChapter | null;
+  let verse = null as ParsedVerse | null;
   let mode: "verse" | "heading" | "title" | "skip" = "heading";
   let pendingPara = false;
   let pendingPoetry = false;

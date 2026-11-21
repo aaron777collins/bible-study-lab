@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Bible Study Lab</title>
+    <meta name="description" content="Read the Bible, explore how Scripture connects through about 345,000 cross references, and keep your notes private in your own browser. Free, with no account." />
+    <meta name="theme-color" content="#f5f7fa" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%icon.svg" />
+    <link rel="apple-touch-icon" href="%BASE_URL%apple-touch-icon.png" />
+    <meta property="og:title" content="Bible Study Lab" />
+    <meta property="og:description" content="Read, explore cross references, keep private notes and share Scripture. Free and private." />
+    <meta property="og:type" content="website" />
+    <script>
+      // Set the theme before first paint so there is no flash.
+      (function () {
+        try {
+          var p = JSON.parse(localStorage.getItem("bsl-prefs-v1") || "{}");
+          var dark = p.theme === "dark" || (p.theme !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          var el = document.documentElement;
+          el.dataset.theme = dark ? "dark" : "light";
+          if (p.redLetter === false) el.dataset.redletter = "off";
+          if (p.font === "sans") el.dataset.font = "sans";
+        } catch (e) {
+          if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root">
+      <p style="font-family: system-ui, sans-serif; padding: 2rem; color: #556075">Loading Bible Study Lab...</p>
+    </div>
+    <noscript><p style="padding: 2rem; font-family: system-ui, sans-serif">Bible Study Lab needs JavaScript to run. Nothing is sent anywhere; everything happens in your browser.</p></noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
