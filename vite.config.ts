@@ -51,13 +51,13 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 3_000_000,
         runtimeCaching: [
           {
-            // Data files never change inside v1, so serve them from the cache first.
-            urlPattern: ({ url }) => url.pathname.startsWith(`${base}data/v1/`),
+            // Data files never change inside v1, so serve them from the cache first. A RegExp is used because functions cannot carry variables into the service worker.
+            urlPattern: /\/bible-study-lab\/data\/v1\//,
             handler: "CacheFirst",
             options: { cacheName: "bsl-data-v1", expiration: { maxEntries: 900, maxAgeSeconds: 60 * 60 * 24 * 365, purgeOnQuotaError: true }, cacheableResponse: { statuses: [200] } },
           },
           {
-            urlPattern: ({ url }) => url.pathname.endsWith(".woff2"),
+            urlPattern: /\.woff2$/,
             handler: "CacheFirst",
             options: { cacheName: "bsl-fonts", expiration: { maxEntries: 40 }, cacheableResponse: { statuses: [200] } },
           },

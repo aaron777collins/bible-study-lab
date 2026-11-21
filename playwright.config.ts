@@ -14,6 +14,6 @@ export default defineConfig({
   projects: [
     { name: "smoke", testMatch: /smoke\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
     { name: "chromium", testIgnore: /smoke\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
-    { name: "iphone", testIgnore: /(smoke|offline)\.spec\.ts/, use: { ...devices["iPhone 15"] } },
+    { name: "iphone", testMatch: /(flows|layout)\.spec\.ts/, use: { ...devices["iPhone 15"] } },
   ],
 });

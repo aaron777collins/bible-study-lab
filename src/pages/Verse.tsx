@@ -159,7 +159,7 @@ export function Component() {
           <div className="mb-4 rounded-md border p-3">
             <LinkFilterBar value={filter} onChange={setFilter} groupBy={group} onGroupBy={(g) => setFlag("group", g)} />
           </div>
-          {links.loading ? <Skeleton className="h-60 w-full" /> : links.error ? <p className="text-destructive" role="alert">Could not load cross references. Check your connection and try again.</p> : <ConnectionsList links={links.data ?? []} filter={filter} tr={tr} group={group} />}
+          {links.loading ? <Skeleton className="h-60 w-full" /> : links.error ? <p className="text-destructive" role="alert">Could not load cross references. Check your connection and try again.</p> : <ConnectionsList links={links.data ?? []} filter={filter} tr={tr} group={group} trailQuery={`?trail=${[...trail, id].slice(-5).join(",")}`} />}
         </section>
       </div>
     </Page>

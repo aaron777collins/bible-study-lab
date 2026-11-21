@@ -42,7 +42,7 @@ function Preview({ tr, link }: { tr: string; link: XLink }) {
   );
 }
 
-export function XrefRow({ link, top, tr, onOpen }: { link: XLink; top: number; tr: string; onOpen?: () => void }) {
+export function XrefRow({ link, top, tr, onOpen, trailQuery = "" }: { link: XLink; top: number; tr: string; onOpen?: () => void; trailQuery?: string }) {
   const label = formatRange(link.id, link.end);
   const dirText = link.dir === "both" ? "Links both ways" : link.dir === "in" ? "Referenced by" : "";
   return (
@@ -54,7 +54,7 @@ export function XrefRow({ link, top, tr, onOpen }: { link: XLink; top: number; t
       <Preview tr={tr} link={link} />
       <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
         {dirText && <span>{dirText}</span>}
-        <Link to={connectionsPath(link.id)} onClick={onOpen} className="inline-flex items-center gap-1">
+        <Link to={connectionsPath(link.id, trailQuery)} onClick={onOpen} className="inline-flex items-center gap-1">
           <Compass className="size-3.5" aria-hidden="true" /> Connections from here
         </Link>
       </div>
@@ -62,7 +62,7 @@ export function XrefRow({ link, top, tr, onOpen }: { link: XLink; top: number; t
   );
 }
 
-export function ConnectionsList({ links, filter, tr, group = false, pageSize = 25, onOpen, emptyText }: { links: XLink[]; filter: LinkFilter; tr: string; group?: boolean; pageSize?: number; onOpen?: () => void; emptyText?: string }) {
+export function ConnectionsList({ links, filter, tr, group = false, pageSize = 25, onOpen, emptyText, trailQuery }: { links: XLink[]; filter: LinkFilter; tr: string; group?: boolean; pageSize?: number; onOpen?: () => void; emptyText?: string; trailQuery?: string }) {
   const [shown, setShown] = useState(pageSize);
   const filtered = useMemo(() => filterLinks(links, filter), [links, filter]);
   const top = useMemo(() => Math.max(1, ...links.map((l) => l.votes)), [links]);
@@ -83,7 +83,7 @@ export function ConnectionsList({ links, filter, tr, group = false, pageSize = 2
         {entries.map(([b, ls]) => (
           <section key={b} aria-label={BOOKS[b].name} className="mb-4">
             <h3 className="mb-1 text-base">{BOOKS[b].name} <span className="text-sm font-normal text-muted-foreground">{ls.length} {ls.length === 1 ? "link" : "links"}</span></h3>
-            <ul>{ls.slice(0, 10).map((l) => <XrefRow key={`${l.id}-${l.end}`} link={l} top={top} tr={tr} onOpen={onOpen} />)}</ul>
+            <ul>{ls.slice(0, 10).map((l) => <XrefRow key={`${l.id}-${l.end}`} link={l} top={top} tr={tr} onOpen={onOpen} trailQuery={trailQuery} />)}</ul>
             {ls.length > 10 && <p className="text-xs text-muted-foreground">and {ls.length - 10} more in {BOOKS[b].name}. Use the book filter to see them.</p>}
           </section>
         ))}
@@ -97,7 +97,7 @@ export function ConnectionsList({ links, filter, tr, group = false, pageSize = 2
       </p>
       <ul>
         {filtered.slice(0, shown).map((l) => (
-          <XrefRow key={`${l.id}-${l.end}`} link={l} top={top} tr={tr} onOpen={onOpen} />
+          <XrefRow key={`${l.id}-${l.end}`} link={l} top={top} tr={tr} onOpen={onOpen} trailQuery={trailQuery} />
         ))}
       </ul>
       {filtered.length > shown && (

@@ -23,6 +23,7 @@ export const router = createHashRouter([
     path: "/",
     element: <Layout />,
     errorElement: <ErrorPage />,
+    hydrateFallbackElement: <p className="p-8 text-muted-foreground">Loading Bible Study Lab...</p>,
     children: [
       { index: true, lazy: () => import("./pages/Today") },
       { path: "read", lazy: () => import("./pages/ReadRedirect") },

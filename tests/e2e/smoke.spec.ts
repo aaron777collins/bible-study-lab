@@ -12,7 +12,7 @@ test("the home page shows a verse of the day", async ({ page }) => {
 
 test("read John 3, select verse 16 with the keyboard and copy it", async ({ page }) => {
   await page.goto("./#/read/john/3");
-  const v16 = page.locator("#v16");
+  const v16 = page.locator("#v16 button[data-vbtn]");
   await expect(v16).toBeVisible();
   await v16.focus();
   await page.keyboard.press("Enter");
