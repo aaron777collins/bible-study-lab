@@ -26,6 +26,58 @@
         }
       })();
     </script>
+    <script>
+      // Start the first screen's downloads before the app has loaded: its script chunks and its data.
+      (function () {
+        try {
+          var base = "%BASE_URL%";
+          var h = location.hash;
+          var add = function (rel, href, as) {
+            var l = document.createElement("link");
+            l.rel = rel;
+            l.href = href;
+            if (as) {
+              l.as = as;
+              l.crossOrigin = "anonymous";
+            }
+            document.head.appendChild(l);
+          };
+          var pre = __PRELOAD__;
+          var data = base + "data/v1/";
+          var prefs = {};
+          try {
+            prefs = JSON.parse(localStorage.getItem("bsl-prefs-v1") || "{}");
+          } catch (e) {}
+          var tr = function (q) {
+            var t = new URLSearchParams(q || "").get("t") || prefs.translation || "kjv";
+            return /^(kjv|web|asv|ylt)$/.test(t) ? t : "kjv";
+          };
+          var m = /^#\/read\/([a-z0-9-]+)\/\d+(?:\?(.*))?$/.exec(h);
+          if (m) {
+            var osis = __BOOK_MAP__[m[1]];
+            if (!osis) return;
+            pre.read.forEach(function (u) { add("modulepreload", u); });
+            add("preload", data + "text/" + tr(m[2]) + "/" + osis + ".json", "fetch");
+          } else if (h === "" || h === "#" || h === "#/") {
+            pre.today.forEach(function (u) { add("modulepreload", u); });
+            add("preload", data + "votd.json", "fetch");
+            var starts = __BOOK_START__;
+            var names = __OSIS__;
+            var now = new Date();
+            var day = Math.round((Date.UTC(2024, now.getMonth(), now.getDate()) - Date.UTC(2024, 0, 1)) / 864e5);
+            fetch(data + "votd.json").then(function (r) { return r.json(); }).then(function (ids) {
+              var id = ids[Math.min(day, 365)];
+              var lo = 0, hi = 65;
+              while (lo < hi) {
+                var mid = (lo + hi + 1) >> 1;
+                if (starts[mid] <= id) lo = mid; else hi = mid - 1;
+              }
+              add("preload", data + "text/" + tr("") + "/" + names[lo] + ".json", "fetch");
+            }).catch(function () {});
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root">

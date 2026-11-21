@@ -1,18 +1,28 @@
-import { useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation } from "react-router";
 import { BookOpen, Compass, Home, MoreHorizontal, NotebookPen, Search } from "lucide-react";
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Logo } from "./Logo";
-import { CommandMenu, useCommandMenu } from "./CommandMenu";
-import { FirstSaveDialog } from "./FirstSaveDialog";
+import { useCommandMenu } from "@/lib/commandStore";
 import { ThemeToggle } from "./ThemeToggle";
-import { PwaPrompts } from "./PwaPrompts";
 import { readPath } from "@/lib/nav";
 import { usePrefs, resolveTheme } from "@/lib/prefs";
 import { BOOKS } from "@/lib/canon/books";
+
+const CommandMenu = lazy(() => import("./CommandMenu"));
+const Deferred = lazy(() => import("./DeferredUi"));
+
+/** Mount something once the page has had a moment to paint. */
+function AfterPaint({ children }: { children: React.ReactNode }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
+    const id = w.requestIdleCallback ? w.requestIdleCallback(() => setReady(true), { timeout: 1200 }) : window.setTimeout(() => setReady(true), 400);
+    return () => (w.cancelIdleCallback ? w.cancelIdleCallback(id) : clearTimeout(id));
+  }, []);
+  return ready ? <Suspense fallback={null}>{children}</Suspense> : null;
+}
 
 const TOP_LINKS = [
   { to: "/read", label: "Read" },
@@ -48,16 +58,34 @@ export function Layout() {
   const readHref = useReadHref();
   const loc = useLocation();
   const setOpen = useCommandMenu((s) => s.setOpen);
+  const everOpened = useCommandMenu((s) => s.everOpened);
   const theme = usePrefs((s) => s.theme);
   void theme;
   void resolveTheme;
   const reading = loc.pathname.startsWith("/read");
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      const typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable || t.tagName === "SELECT");
+      if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        const s = useCommandMenu.getState();
+        s.setOpen(!s.open);
+      } else if (e.key === "/" && !typing && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        useCommandMenu.getState().setOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   const tab = (isActive: boolean) =>
     `flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-xs font-medium no-underline ${isActive ? "text-lapis" : "text-muted-foreground"}`;
 
   return (
-    <TooltipProvider delayDuration={300}>
+    <>
       <div className="flex min-h-dvh flex-col">
         <button type="button" className="skip-link" onClick={() => mainRef.current?.focus()}>
           Skip to content
@@ -144,12 +172,10 @@ export function Layout() {
           </SheetContent>
         </Sheet>
 
-        <CommandMenu />
-        <FirstSaveDialog />
-        <PwaPrompts />
-        <Toaster position="bottom-center" offset={24} mobileOffset={{ bottom: 140 }} />
+        {everOpened && <Suspense fallback={null}><CommandMenu /></Suspense>}
+        <AfterPaint><Deferred /></AfterPaint>
         <ScrollRestoration getKey={(l) => l.pathname} />
       </div>
-    </TooltipProvider>
+    </>
   );
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import { BookOpen, Compass, Image, Search } from "lucide-react";
@@ -7,7 +7,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MarkedText } from "@/components/VerseText";
 import { MiniArcs } from "@/components/MiniArcs";
 import { NotesBanner } from "@/components/NotesBanner";
-import { VerseCardDialog } from "@/components/share/VerseCardDialog";
 import { useAsync } from "@/hooks/useAsync";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { BOOKS } from "@/lib/canon/books";
@@ -21,6 +20,8 @@ import { useStoreQuery } from "@/lib/store/hooks";
 import { listMemory, listPlans, listProgress, setDayDone } from "@/lib/store/repo";
 import { linksForVerse } from "@/lib/xref/links";
 import { translationById } from "@/lib/translations";
+
+const VerseCardDialog = lazy(() => import("@/components/share/VerseCardDialog").then((m) => ({ default: m.VerseCardDialog })));
 
 /** Day of the year in a leap year, so 29 February has its own verse and everyone sees the same verse on the same date. */
 export function votdIndex(d = new Date()): number {
@@ -100,12 +101,12 @@ export function Component() {
               <MiniArcs center={id} links={links.data ?? []} label={`The strongest cross references from ${formatVerseId(id)}, drawn as arcs across the Bible`} />
               <p className="text-xs text-muted-foreground">Each arc is a cross reference. {links.data ? `${links.data.length} in all.` : ""}</p>
             </div>
-            <VerseCardDialog open={cardOpen} onOpenChange={setCardOpen} text={plain(text.data ?? "")} reference={formatVerseId(id)} translation={translationById(tr).short} />
+            {cardOpen && <Suspense fallback={null}><VerseCardDialog open={cardOpen} onOpenChange={setCardOpen} text={plain(text.data ?? "")} reference={formatVerseId(id)} translation={translationById(tr).short} /></Suspense>}
           </>
         )}
       </section>
 
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
+      {id !== undefined && !text.loading && <div className="mt-6 grid gap-6 md:grid-cols-2">
         <section aria-label="Continue reading" className="rounded-xl border bg-surface p-5">
           <h2 className="mb-2 text-lg">Continue reading</h2>
           {last ? (
@@ -150,7 +151,7 @@ export function Component() {
             <li><Link to="/search"><Search className="mr-1 inline size-4" aria-hidden="true" />Search the text</Link></li>
           </ul>
         </section>
-      </div>
+      </div>}
     </div>
   );
 }

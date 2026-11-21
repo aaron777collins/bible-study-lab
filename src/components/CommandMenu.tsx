@@ -6,9 +6,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { BOOKS } from "@/lib/canon/books";
 import { formatPassage, parseRef } from "@/lib/canon/parse";
 import { passagePath, readPath } from "@/lib/nav";
-import { create } from "zustand";
-
-export const useCommandMenu = create<{ open: boolean; setOpen: (o: boolean) => void }>((set) => ({ open: false, setOpen: (open) => set({ open }) }));
+import { useCommandMenu } from "@/lib/commandStore";
 
 const PAGES: { label: string; to: string; keywords: string }[] = [
   { label: "Today", to: "/", keywords: "home verse of the day" },
@@ -26,26 +24,10 @@ const PAGES: { label: string; to: string; keywords: string }[] = [
   { label: "Help and keyboard shortcuts", to: "/help", keywords: "shortcuts how to" },
 ];
 
-export function CommandMenu() {
+export default function CommandMenu() {
   const { open, setOpen } = useCommandMenu();
   const [q, setQ] = useState("");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement | null;
-      const typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable || t.tagName === "SELECT");
-      if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        useCommandMenu.getState().setOpen(!useCommandMenu.getState().open);
-      } else if (e.key === "/" && !typing && !e.metaKey && !e.ctrlKey) {
-        e.preventDefault();
-        useCommandMenu.getState().setOpen(true);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
 
   useEffect(() => {
     if (!open) setQ("");

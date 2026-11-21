@@ -869,3 +869,31 @@ Insights) are lazy routes.
 
 Each step ends with tests green and a commit; the site is redeployed as it
 grows.
+
+---
+
+## 11. Build notes and deviations (2026-11-21)
+
+What changed between this plan and the build, and why.
+
+- **React is 19.3.1, not 19.1.10.** `react-router` 8.5.1 needs React 19.2.7 or newer. 19.3.1 was published 2026-10-14, more than two weeks before the build.
+- **No `canon.json`.** The verse counts per chapter are generated into `src/lib/canon/versification.generated.ts` and bundled, so the parser and ids work with no fetch.
+- **Data budgets.** Total `public/data` is 43.9 MB raw, so the cap is 50 MB. Gzip sizes differ between macOS and Linux zlib (Psalms cross references are 293 KB on macOS), so the per-file cap is 350 KB and 650 KB for `edges5.bin`.
+- **ASV also carries Strong's tags** in its USFM. They are machine aligned like the WEB ones, so they are not used. Word study uses the KJV only.
+- **Cross references.** 344,799 rows, 344,798 used. The one exception is a row whose source is `3John.1.15`. A few ranges ended at that same verse, one past the KJV chapter, and are clamped to 3 John 1:14.
+- **Search** builds its MiniSearch index in a worker on the first search (about 0.4 s on a laptop) and keeps it for the visit. It is not saved to Cache Storage: the text files are already cached, and rebuilding is fast enough.
+- **Collections** over the 2,000 character cap are refused with a message that asks for fewer passages, instead of offering a JSON file. Notes backups already cover moving data as a file.
+- **Plans.** Beyond the five in this plan there are "John in 21 days" and "Paul's letters in 30 days". M'Cheyne's calendar was transcribed from the public `khornberg/readingplans` data and checked: 365 days, 4 readings, New Testament and Psalms twice, the rest once, every chapter present.
+- **Verse of the day.** All 366 were read by hand. Verses that read badly alone (harsh, narrow, or incomplete) are listed in `scripts/build-votd.ts` and the next best from the same topics take their place.
+- **Theme switch** is one button that steps through device, Day and Vigil. A dropdown menu pulled about 30 KB of script onto the first screen.
+- **Heat map cells** are 24 px so every cell is a valid tap target (WCAG 2.2). The map scrolls inside its own box.
+- **Verse numbers are the buttons.** The verse text itself also selects on click, but the focusable, named control is the number, so footnote and word buttons inside a verse are never nested inside another button.
+- **Arc band** is one keyboard stop (arrow keys and Enter) instead of 66 tiny buttons.
+- **ESLint** was not added. `tsc --noEmit` is the lint step, plus axe and the unit tests.
+- **GitHub Pages** serves the site at https://aaron777collins.github.io/bible-study-lab/, which redirects to the account's custom domain: https://www.aaroncollins.info/bible-study-lab/.
+
+### Results
+
+- Unit tests: 257 passing (Vitest). Data verification passes on every push.
+- End to end: Chromium, WebKit (iPhone 15 emulation) and a smoke set. axe finds no violations on 29 routes in light and dark. No sideways scroll at 320 and 375 px on all of them.
+- Lighthouse, mobile preset, simulated slow 4G with 4x CPU slowdown: accessibility 100, best practices 100, SEO 100 on every page tested. Performance is 87 to 94 (Today 89, Reader 87, Explore 89, static pages 94). Largest contentful paint is 3.0 s on a static page and 3.7 to 4.1 s where data has to load, against the 2.5 s target. The floor is the single page app architecture (script, then route chunk, then data). Prerendering would be the next step. Cumulative layout shift is 0.

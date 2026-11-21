@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Columns2, Copy, Headphones, Library, Link2, NotebookPen, Pause, SlidersHorizontal, Square, Highlighter, Share2 } from "lucide-react";
@@ -12,12 +12,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { NotesBanner } from "@/components/NotesBanner";
-import { ReadingOptions } from "@/components/ReadingOptions";
-import { BookNavAll } from "@/components/reader/BookNav";
 import { ChapterView, type Token } from "@/components/reader/ChapterView";
-import { CompareView, type CompareColumn } from "@/components/reader/CompareView";
-import { StudyPanel, type PanelTab } from "@/components/reader/StudyPanel";
-import { HighlightPicker } from "@/components/notes/HighlightPicker";
+import type { CompareColumn } from "@/components/reader/CompareView";
+import type { PanelTab } from "@/components/reader/StudyPanel";
 import { useAsync, useMediaQuery } from "@/hooks/useAsync";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { BOOKS, bookIndexFromSlug } from "@/lib/canon/books";
@@ -32,6 +29,14 @@ import { appUrl, copyText, formatCopy } from "@/lib/share/format";
 import { useStoreQuery } from "@/lib/store/hooks";
 import { highlightsInRange, listBookmarks, listNotes } from "@/lib/store/repo";
 import { DEFAULT_TRANSLATION, isTranslationId, TRANSLATIONS, translationById } from "@/lib/translations";
+
+// Everything that is not needed to show the chapter is loaded when it is first used.
+const StudyPanel = lazy(() => import("@/components/reader/StudyPanel").then((m) => ({ default: m.StudyPanel })));
+const CompareView = lazy(() => import("@/components/reader/CompareView").then((m) => ({ default: m.CompareView })));
+const BookNavAll = lazy(() => import("@/components/reader/BookNav").then((m) => ({ default: m.BookNavAll })));
+const ReadingOptions = lazy(() => import("@/components/ReadingOptions").then((m) => ({ default: m.ReadingOptions })));
+const HighlightPicker = lazy(() => import("@/components/notes/HighlightPicker").then((m) => ({ default: m.HighlightPicker })));
+const Later = ({ children }: { children: React.ReactNode }) => <Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Loading</div>}>{children}</Suspense>;
 
 function useIsTyping() {
   return useCallback((e: Event) => {
@@ -271,7 +276,7 @@ export function Component() {
   })();
 
   const panel = hasSel ? (
-    <StudyPanel
+    <Later><StudyPanel
       start={selStart}
       end={selEnd}
       tr={tr}
@@ -285,14 +290,14 @@ export function Component() {
         setDrawer(false);
         update({ v: null, panel: null });
       }}
-    />
+    /></Later>
   ) : null;
 
   return (
     <div className="mx-auto flex w-full max-w-[88rem]">
       {xl && (
         <aside className="sticky top-14 h-[calc(100dvh-3.5rem)] w-64 shrink-0 overflow-y-auto border-r px-2 py-4" aria-label="Books">
-          <BookNavAll book={book} chapter={chapter} query={keepQuery} />
+          <Later><BookNavAll book={book} chapter={chapter} query={keepQuery} /></Later>
         </aside>
       )}
       <div className="min-w-0 flex-1 px-4 pb-24 pt-4 md:px-8 md:pt-6">
@@ -370,7 +375,7 @@ export function Component() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-80">
-                <ReadingOptions />
+                <Later><ReadingOptions /></Later>
               </PopoverContent>
             </Popover>
           </div>
@@ -387,7 +392,7 @@ export function Component() {
             <Button className="mt-3" onClick={() => window.location.reload()}>Try again</Button>
           </div>
         ) : compare ? (
-          <CompareView
+          <Later><CompareView
             book={book}
             chapter={chapter}
             selection={selection}
@@ -396,7 +401,7 @@ export function Component() {
               { tr, data: chapterData, notes: footnotes } as CompareColumn,
               ...(compareTexts.data ?? []).map((c) => ({ tr: c.t, data: c.text.c[chapter - 1], notes: new Map(c.notes.filter(([ch]) => ch === chapter).map(([, v, ns]) => [v, ns] as [number, string[]])) })),
             ]}
-          />
+          /></Later>
         ) : (
           <ChapterView
             book={book}
@@ -419,7 +424,7 @@ export function Component() {
           />
         )}
 
-        <nav aria-label="Chapter navigation" className="no-print mt-8 flex max-w-xl justify-between gap-3">
+        {chapterData && <nav aria-label="Chapter navigation" className="no-print mt-8 flex max-w-xl justify-between gap-3">
           {prev ? (
             <Button variant="outline" asChild>
               <Link to={readPath(prev.book, prev.chapter, keepQuery)}><ChevronLeft aria-hidden="true" /> {BOOKS[prev.book].name} {prev.chapter}</Link>
@@ -430,10 +435,10 @@ export function Component() {
               <Link to={readPath(next.book, next.chapter, keepQuery)}>{BOOKS[next.book].name} {next.chapter} <ChevronRight aria-hidden="true" /></Link>
             </Button>
           ) : <span />}
-        </nav>
-        <p className="no-print mt-6 max-w-xl text-sm text-muted-foreground">
+        </nav>}
+        {chapterData && <p className="no-print mt-6 max-w-xl text-sm text-muted-foreground">
           Tap a verse to see its connections, add a note or share it. Shift-click or turn on range mode to pick several verses.
-        </p>
+        </p>}
       </div>
 
       {wide && hasSel && (
@@ -452,7 +457,7 @@ export function Component() {
               <Button variant="ghost" className="flex-1 flex-col gap-0.5 h-auto py-1.5 text-xs" aria-label="Highlight"><Highlighter aria-hidden="true" />Mark</Button>
             </PopoverTrigger>
             <PopoverContent side="top" className="w-auto">
-              <HighlightPicker ids={Array.from({ length: selEnd - selStart + 1 }, (_, i) => selStart + i)} current={hlMap.get(selStart)} />
+              <Later><HighlightPicker ids={Array.from({ length: selEnd - selStart + 1 }, (_, i) => selStart + i)} current={hlMap.get(selStart)} /></Later>
             </PopoverContent>
           </Popover>
           <Button variant="ghost" className="flex-1 flex-col gap-0.5 h-auto py-1.5 text-xs" onClick={() => openTab("xref")} aria-label="Links"><Link2 aria-hidden="true" />Links</Button>
@@ -479,7 +484,7 @@ export function Component() {
               <SheetTitle>Books and chapters</SheetTitle>
               <SheetDescription className="sr-only">Choose a book and chapter to read</SheetDescription>
             </SheetHeader>
-            <BookNavAll book={book} chapter={chapter} query={keepQuery} onNavigate={() => setNavOpen(false)} />
+            <Later><BookNavAll book={book} chapter={chapter} query={keepQuery} onNavigate={() => setNavOpen(false)} /></Later>
           </SheetContent>
         </Sheet>
       )}
