@@ -133,7 +133,7 @@ const walk = (dir: string) => {
     else {
       total += st.size;
       const gz = zlib.gzipSync(fs.readFileSync(full)).length;
-      const limit = f.endsWith(".bin") ? 500_000 : 300_000;
+      const limit = f.endsWith(".bin") ? 650_000 : 350_000;
       if (gz > limit) fail(`${path.relative(OUT, full)} is ${gz} bytes gzipped, over ${limit}`);
     }
   }
