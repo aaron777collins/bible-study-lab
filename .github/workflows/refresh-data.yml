@@ -1,8 +1,7 @@
 name: Refresh data
 
+# Text updates happen only by the owner's decision, so this runs by hand and never on a schedule.
 on:
-  schedule:
-    - cron: "17 5 3 * *"
   workflow_dispatch:
 
 permissions:
@@ -39,4 +38,4 @@ jobs:
           git commit -m "Refresh data from OpenBible.info and eBible"
           git push origin "$branch"
           rows=$(cat public/data/v1/xref/stats.json)
-          gh pr create --title "Refresh data" --body "Monthly data refresh. Row counts: $rows. Review the diff of public/data/v1/xref/stats.json and scripts/sources.lock.json."
+          gh pr create --title "Refresh data" --body "Manual data refresh. Row counts: $rows. Review the diff of public/data/v1/xref/stats.json and scripts/sources.lock.json."

@@ -859,10 +859,10 @@ simulated run is what CI gates on.
   - Actions are pinned to full commit SHAs with the version as a comment.
 - `.github/workflows/ci.yml` on pull requests: the same test job plus the full
   Playwright suite and Lighthouse CI.
-- `.github/workflows/refresh-data.yml`, monthly and manual: fetch sources with
+- `.github/workflows/refresh-data.yml`, manual only, no schedule: fetch sources with
   `--update`, rebuild, verify, and open a pull request with the new data and
-  the row count diff. OpenBible votes change weekly, so this keeps the data
-  current without breaking builds.
+  the row count diff. The Scripture text is not changed automatically. Text
+  updates happen only by the owner's decision.
 - After deploy, a smoke check fetches the live URL and one data file.
 
 ---
@@ -920,4 +920,4 @@ What changed between this plan and the build, and why.
   - Why 2.5 s is not reachable: what remains on the Reader is about 290 KB over the wire (126 KB shared libraries, 55 KB of fonts, 32 KB of chapter data, 22 KB of pickers, 18 KB of our code, 15 KB of CSS), which is about 1.5 s of transfer at the simulated 1.6 Mbps before the 4x CPU slowdown on script work. React and the router alone are about 100 KB of that. Prerendering was assessed on 2026-11-22 and rejected. With the network unthrottled the same page has an LCP of about 100 ms, so the rest is simulated network and CPU, not the HTML. The routes are hash routes, so a prerender could cover Today alone, and the Today LCP element is the verse of the day, chosen by the visitor's date and translation. Cutting the data for a chapter (one file per chapter instead of one per book) and dropping a font weight are the remaining levers and both change the look or the data format, so they are not done.
   - The CI limit is 3800 ms and 0.9 performance. Tighten it again if a later change moves the numbers.
 - Known defects found in the live review and fixed on 2026-11-22: the reader toolbar was translucent with a blur, books without footnotes triggered a failing request for a file that does not exist, the Mark button's accessible name did not match its text, and the book flows scroll box could not be reached by keyboard on phones. Each has an end to end test.
-- The pull request workflow (`ci.yml`) and the monthly refresh (`refresh-data.yml`) have not run on GitHub yet. Every step of `ci.yml` was run locally on 2026-11-22 and passes. The refresh job needs a manual run on a branch to prove it.
+- The pull request workflow (`ci.yml`) and the manual refresh (`refresh-data.yml`) have not run on GitHub yet. Every step of `ci.yml` was run locally on 2026-11-22 and passes. The refresh job needs a manual run on a branch to prove it.
