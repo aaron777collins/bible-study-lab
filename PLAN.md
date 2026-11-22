@@ -827,6 +827,10 @@ LCP decision (2026-11-22): 2.5 s stays the goal. The limit CI enforces is
 margin for run to run noise, and performance must be at least 0.9. See
 section 11 for what was tried and why 2.5 s is out of reach for a React single
 page app on simulated slow 4G.
+Live check after the merge (2026-11-22, default mobile Lighthouse against the
+deployed site): LCP 2.28 to 2.44 s and performance 0.98 on Today, Reader and
+Explore, so the 2.5 s goal holds on the live host. The stricter local
+simulated run is what CI gates on.
 
 ---
 
