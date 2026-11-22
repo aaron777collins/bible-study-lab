@@ -95,7 +95,7 @@ export function Layout() {
         <button type="button" className="skip-link" onClick={() => mainRef.current?.focus()}>
           Skip to content
         </button>
-        <header className="no-print sticky top-0 z-30 border-b bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/85">
+        <header className="no-print sticky top-0 z-30 border-b bg-surface">
           <div className="mx-auto flex h-14 max-w-[88rem] items-center gap-3 px-4">
             <Link to="/" className="flex items-center gap-2 text-foreground no-underline" aria-label="Bible Study Lab, home">
               <Logo />
