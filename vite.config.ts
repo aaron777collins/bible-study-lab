@@ -8,6 +8,25 @@ import { VERSE_COUNTS } from "./src/lib/canon/versification.generated.ts";
 
 const base = "/bible-study-lab/";
 
+const pkgOf = (id: string) => /node_modules[\\/]((?:@[^\\/]+[\\/])?[^\\/]+)/.exec(id.replace(/.*node_modules[\\/](?=.*node_modules[\\/])/, ""))?.[1].replace(/\\/g, "/");
+// What every page needs: React, the router, class helpers, icons, and the dialog stack that the shell uses.
+const CORE = new Set(["react", "react-dom", "react-router", "scheduler", "tailwind-merge", "class-variance-authority", "clsx", "tslib", "lucide-react", "aria-hidden", "react-remove-scroll", "react-remove-scroll-bar", "react-style-singleton", "use-callback-ref", "use-sidecar", "get-nonce", "idb", "zustand"]);
+const CORE_RADIX = /^@radix-ui\/(primitive|react-(compose-refs|context|id|slot|presence|portal|primitive|visually-hidden|direction|dialog|dismissable-layer|focus-scope|focus-guards|use-.+))$/;
+const isCoreVendor = (id: string) => {
+  const pkg = pkgOf(id);
+  return !!pkg && (CORE.has(pkg) || CORE_RADIX.test(pkg));
+};
+// The pickers and menus of the reader toolbar, loaded together by the pages that have them.
+const WIDGET_RADIX = /^@radix-ui\/react-(select|popover|popper|collection|roving-focus|toggle-group|toggle|switch|label|arrow)$/;
+const isWidgetVendor = (id: string) => {
+  const pkg = pkgOf(id);
+  return !!pkg && (WIDGET_RADIX.test(pkg) || pkg.startsWith("@floating-ui/"));
+};
+
+// Small modules of our own that most pages share. Kept in one file so a page does not fetch twenty tiny ones.
+// Left out on purpose: the toast and drawer wrappers, and widgets that pull in libraries only some pages use.
+const APP_SHARED = /[\\/]src[\\/](components[\\/]ui[\\/](button|skeleton|switch|label|select|popover|toggle-group|toggle|alert|badge|input|textarea|separator|dialog|sheet)\.tsx|hooks[\\/]|lib[\\/](canon[\\/]|data[\\/]|store[\\/]|nav\.ts|prefs\.ts|reader\.ts|translations\.ts|utils\.ts|share[\\/]format\.ts))/;
+
 /**
  * Two small speed helpers for the first load:
  * preload the two fonts every page uses, and fill in the book map for the early chapter fetch in index.html.
@@ -120,6 +139,15 @@ export default defineConfig({
     }),
   ],
   resolve: { alias: { "@": path.resolve(import.meta.dirname, "src") } },
-  build: { target: "es2022", sourcemap: false },
+  build: {
+    target: "es2022",
+    sourcemap: false,
+    rolldownOptions: {
+      output: {
+        // Fewer, larger shared chunks: each extra file costs a round trip on a slow phone connection.
+        codeSplitting: { groups: [{ name: "vendor", test: isCoreVendor }, { name: "widgets", test: isWidgetVendor }, { name: "app", test: APP_SHARED }] },
+      },
+    },
+  },
   worker: { format: "es" },
 });

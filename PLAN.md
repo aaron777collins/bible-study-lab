@@ -822,6 +822,12 @@ Targets on Today, Reader and Explore: Performance at least 90, Accessibility
 180 KB gzip, LCP under 2.5 s, CLS under 0.05. Heavy views (Explore, Path,
 Insights) are lazy routes.
 
+LCP decision (2026-11-22): 2.5 s stays the goal. The limit CI enforces is
+3800 ms, set from measured runs (3.15 to 3.36 s on the three pages) with a
+margin for run to run noise, and performance must be at least 0.9. See
+section 11 for what was tried and why 2.5 s is out of reach for a React single
+page app on simulated slow 4G.
+
 ---
 
 ## 9. Deploy
@@ -894,6 +900,12 @@ What changed between this plan and the build, and why.
 
 ### Results
 
-- Unit tests: 257 passing (Vitest). Data verification passes on every push.
-- End to end: Chromium, WebKit (iPhone 15 emulation) and a smoke set. axe finds no violations on 29 routes in light and dark. No sideways scroll at 320 and 375 px on all of them.
-- Lighthouse, mobile preset, simulated slow 4G with 4x CPU slowdown: accessibility 100, best practices 100, SEO 100 on every page tested. Performance is 87 to 94 (Today 89, Reader 87, Explore 89, static pages 94). Largest contentful paint is 3.0 s on a static page and 3.7 to 4.1 s where data has to load, against the 2.5 s target. The floor is the single page app architecture (script, then route chunk, then data). Cumulative layout shift is 0. Prerendering was assessed on 2026-11-22 and rejected. With the network unthrottled the same page has an LCP of 71 ms, and the measured breakdown is 5 ms to first byte plus 75 ms of render delay, so the 3.9 s is the script waterfall under simulated slow 4G (about 45 requests, then the verse data) and not the HTML. The routes are hash routes, so the server only ever serves one document and a prerender could cover Today alone, not the reader (4.2 s) or Explore (3.9 s). The LCP element on Today is the verse of the day, chosen by the visitor's date and translation, so HTML baked at build time would be wrong on every other day. Cutting the chain (fewer chunks on the first screen) is the remaining lever. The CI limit stays at 4.5 s.
+- Unit tests: 264 passing in 11 files (Vitest). Data verification passes on every push.
+- End to end: Chromium, WebKit (iPhone 15 emulation) and a smoke set, 295 passing. axe finds no violations on 29 routes in light and dark, at desktop width and at 390 px (the phone run covers the selected verse action bar and the scrolling book flows grid). No sideways scroll at 320 and 375 px on all of them. The reader toolbar and the site header are opaque in both themes at desktop and phone width, and opening John 3 makes no failed request and logs no console error.
+- Lighthouse, mobile preset, simulated slow 4G with 4x CPU slowdown: accessibility 100, best practices 100, SEO 100 on every page tested. After the first-screen work of 2026-11-22, performance is 0.92 to 0.94 (Today 0.92, Reader 0.94, Explore 0.92) and largest contentful paint is 3.3 s on Today, 3.15 s on the Reader and 3.35 s on Explore, down from 3.9, 4.1 and 3.9 s. Cumulative layout shift is 0. Requests on the first screen fell from about 55 to about 22.
+  - What worked: shared libraries (React, the router, the dialog stack, class helpers, icons) in one chunk, the reader's pickers and menus in a second, and our own small shared modules in a third, instead of about forty tiny files; the toast library and the phone bottom sheet load on first use; the toast and service worker prompts mount one second after first paint, so their files stay out of the first screen's chain.
+  - What was tried and did not help enough: grouping every library, including the pickers, into one chunk gave the same time for the Reader and a slower Today, because every page then paid for code it does not use.
+  - Why 2.5 s is not reachable: what remains on the Reader is about 290 KB over the wire (126 KB shared libraries, 55 KB of fonts, 32 KB of chapter data, 22 KB of pickers, 18 KB of our code, 15 KB of CSS), which is about 1.5 s of transfer at the simulated 1.6 Mbps before the 4x CPU slowdown on script work. React and the router alone are about 100 KB of that. Prerendering was assessed on 2026-11-22 and rejected. With the network unthrottled the same page has an LCP of about 100 ms, so the rest is simulated network and CPU, not the HTML. The routes are hash routes, so a prerender could cover Today alone, and the Today LCP element is the verse of the day, chosen by the visitor's date and translation. Cutting the data for a chapter (one file per chapter instead of one per book) and dropping a font weight are the remaining levers and both change the look or the data format, so they are not done.
+  - The CI limit is 3800 ms and 0.9 performance. Tighten it again if a later change moves the numbers.
+- Known defects found in the live review and fixed on 2026-11-22: the reader toolbar was translucent with a blur, books without footnotes triggered a failing request for a file that does not exist, the Mark button's accessible name did not match its text, and the book flows scroll box could not be reached by keyboard on phones. Each has an end to end test.
+- The pull request workflow (`ci.yml`) and the monthly refresh (`refresh-data.yml`) have not run on GitHub yet. Every step of `ci.yml` was run locally on 2026-11-22 and passes. The refresh job needs a manual run on a branch to prove it.

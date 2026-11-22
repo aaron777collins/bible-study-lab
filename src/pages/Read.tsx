@@ -1,9 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
-import { toast } from "@/lib/toast";
+import { toastLater as toast } from "@/lib/toastLater";
 import { ChevronLeft, ChevronRight, Columns2, Copy, Headphones, Library, Link2, NotebookPen, Pause, SlidersHorizontal, Square, Highlighter, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -33,6 +32,7 @@ import { DEFAULT_TRANSLATION, isTranslationId, TRANSLATIONS, translationById } f
 // Everything that is not needed to show the chapter is loaded when it is first used.
 const StudyPanel = lazy(() => import("@/components/reader/StudyPanel").then((m) => ({ default: m.StudyPanel })));
 const CompareView = lazy(() => import("@/components/reader/CompareView").then((m) => ({ default: m.CompareView })));
+const PanelDrawer = lazy(() => import("@/components/reader/PanelDrawer").then((m) => ({ default: m.PanelDrawer })));
 const BookNavAll = lazy(() => import("@/components/reader/BookNav").then((m) => ({ default: m.BookNavAll })));
 const ReadingOptions = lazy(() => import("@/components/ReadingOptions").then((m) => ({ default: m.ReadingOptions })));
 const HighlightPicker = lazy(() => import("@/components/notes/HighlightPicker").then((m) => ({ default: m.HighlightPicker })));
@@ -136,6 +136,9 @@ export function Component() {
   const selStart = valid && selection ? toId(book, chapter, selection[0]) : 0;
   const selEnd = valid && selection ? toId(book, chapter, Math.min(selection[1], maxV)) : 0;
   const hasSel = !!selection && valid;
+  // the bottom sheet loads the first time a verse is selected, then stays mounted so it can close with its animation
+  const drawerEver = useRef(false);
+  if (hasSel) drawerEver.current = true;
 
   // scroll the selection into view when the chapter opens
   const scrolled = useRef("");
@@ -302,7 +305,7 @@ export function Component() {
       )}
       <div className="min-w-0 flex-1 px-4 pb-24 pt-4 md:px-8 md:pt-6">
         <NotesBanner className="mb-4 max-w-2xl" />
-        <div className="no-print sticky top-14 z-20 -mx-4 mb-4 flex flex-nowrap items-center gap-2 sm:flex-wrap border-b bg-page/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
+        <div data-testid="reader-toolbar" className="no-print sticky top-14 z-20 -mx-4 mb-4 flex flex-nowrap items-center gap-2 sm:flex-wrap border-b bg-page px-4 py-2 md:-mx-8 md:px-8">
           {!xl && (
             <Button variant="outline" onClick={() => setNavOpen(true)} className="min-w-0 shrink gap-2 px-3 font-semibold sm:px-4" aria-label={`${BOOKS[book].name} ${chapter}. Change book or chapter`}>
               <Library className="hidden shrink-0 sm:block" aria-hidden="true" /> <span className="truncate">{BOOKS[book].name} {chapter}</span>
@@ -454,7 +457,7 @@ export function Component() {
           <Button variant="ghost" className="flex-1 flex-col gap-0.5 h-auto py-1.5 text-xs" onClick={() => openTab("notes")} aria-label="Note"><NotebookPen aria-hidden="true" />Note</Button>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" className="flex-1 flex-col gap-0.5 h-auto py-1.5 text-xs" aria-label="Highlight"><Highlighter aria-hidden="true" />Mark</Button>
+              <Button variant="ghost" className="flex-1 flex-col gap-0.5 h-auto py-1.5 text-xs" aria-label="Mark with a highlight"><Highlighter aria-hidden="true" />Mark</Button>
             </PopoverTrigger>
             <PopoverContent side="top" className="w-auto">
               <Later><HighlightPicker ids={Array.from({ length: selEnd - selStart + 1 }, (_, i) => selStart + i)} current={hlMap.get(selStart)} /></Later>
@@ -465,16 +468,10 @@ export function Component() {
           <Button variant={rangeMode ? "default" : "ghost"} className="flex-1 flex-col gap-0.5 h-auto py-1.5 text-xs" aria-pressed={rangeMode} onClick={() => setRangeMode((r) => !r)} aria-label="Select a range of verses">Range</Button>
         </div>
       )}
-      {!wide && (
-        <Drawer open={drawer && hasSel} onOpenChange={setDrawer}>
-          <DrawerContent className="max-h-[88dvh]">
-            <DrawerHeader className="sr-only">
-              <DrawerTitle>Study panel</DrawerTitle>
-              <DrawerDescription>Connections, notes, word study and sharing for the selected verses</DrawerDescription>
-            </DrawerHeader>
-            <div className="min-h-0 flex-1 overflow-hidden" style={{ height: "80dvh" }}>{panel}</div>
-          </DrawerContent>
-        </Drawer>
+      {!wide && drawerEver.current && (
+        <Suspense fallback={null}>
+          <PanelDrawer open={drawer && hasSel} onOpenChange={setDrawer}>{panel}</PanelDrawer>
+        </Suspense>
       )}
 
       {!xl && (
