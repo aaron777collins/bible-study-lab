@@ -115,7 +115,7 @@ function BookFlows() {
   const readout = pick ? `${BOOKS[pick.r].name} to ${BOOKS[pick.c].name}: ${m[pick.r * 66 + pick.c].toLocaleString()} votes` : "Hover or tap a square to see the books and the number of votes.";
   return (
     <div className="grid gap-4">
-      <p className="sticky top-14 z-10 min-h-6 bg-page py-1 text-sm font-medium" role="status" data-testid="flow-readout">{readout}</p>
+      <p className="sticky top-14 z-20 min-h-6 bg-page py-1 text-sm font-medium" role="status" data-testid="flow-readout">{readout}</p>
       <div ref={box} tabIndex={0} role="region" aria-label="Book flows grid" className="max-w-full overflow-x-auto rounded-md border bg-surface outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
         <div className="flex w-max py-2 pr-2" onPointerLeave={() => setPick(null)}>
           <svg className="sticky left-0 z-10 bg-surface" aria-hidden="true" width={padL + 8} height={padT + 66 * cell + 2} style={{ display: "block" }}>
