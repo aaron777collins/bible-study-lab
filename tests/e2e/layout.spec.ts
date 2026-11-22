@@ -139,6 +139,28 @@ test.describe("insights heat maps on a phone", () => {
     expect(result.scrolled, "the grid really scrolled").toBeGreaterThan(100);
     expect(Math.abs(result.after - result.before), "row label did not move").toBeLessThan(1);
   });
+
+  test("book flows readout stays readable when the grid scrolls under it", async ({ page }) => {
+    await page.goto("./#/insights?tab=flows");
+    const readout = page.getByTestId("flow-readout");
+    await expect(page.getByRole("img", { name: /^Heat grid/ })).toBeVisible();
+    await page.evaluate(() => {
+      const box = document.querySelector("[aria-label='Book flows grid']") as HTMLElement;
+      window.scrollTo(0, box.getBoundingClientRect().top + window.scrollY - 40);
+    });
+    await page.waitForTimeout(200);
+    const hit = await readout.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const lines = Math.round(r.height / parseFloat(getComputedStyle(el).lineHeight));
+      // a point inside the last line of text, over the sticky label column
+      const x = r.left + 12;
+      const y = r.bottom - 8;
+      const top = document.elementFromPoint(x, y);
+      return { lines, y, onTop: top === el || el.contains(top), topTag: top?.tagName };
+    });
+    expect(hit.lines, "readout wraps to two lines on a phone").toBeGreaterThanOrEqual(2);
+    expect(hit.onTop, `the readout is covered by ${hit.topTag}`).toBe(true);
+  });
 });
 
 test.describe("site header is opaque", () => {
