@@ -14,13 +14,22 @@ import { BOOKS } from "@/lib/canon/books";
 const CommandMenu = lazy(() => import("./CommandMenu"));
 const Deferred = lazy(() => import("./DeferredUi"));
 
-/** Mount something once the page has had a moment to paint. */
+/** How long to wait before mounting the things that are not part of the first screen, in milliseconds. */
+const AFTER_PAINT_MS = 1000;
+
+/** Mount something a little after the page has painted, so its files do not compete with the first screen's. */
 function AfterPaint({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
-    const id = w.requestIdleCallback ? w.requestIdleCallback(() => setReady(true), { timeout: 1200 }) : window.setTimeout(() => setReady(true), 400);
-    return () => (w.cancelIdleCallback ? w.cancelIdleCallback(id) : clearTimeout(id));
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
+    let idle: number | undefined;
+    const wait = window.setTimeout(() => {
+      idle = w.requestIdleCallback ? w.requestIdleCallback(() => setReady(true), { timeout: 1200 }) : window.setTimeout(() => setReady(true), 400);
+    }, AFTER_PAINT_MS);
+    return () => {
+      clearTimeout(wait);
+      if (idle !== undefined) (w.cancelIdleCallback ? w.cancelIdleCallback(idle) : clearTimeout(idle));
+    };
   }, []);
   return ready ? <Suspense fallback={null}>{children}</Suspense> : null;
 }
