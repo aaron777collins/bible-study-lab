@@ -107,7 +107,7 @@ test.describe("fixes from the visual review", () => {
     await page.goto("./#/insights?tab=flows");
     const svg = page.locator("svg[role=img]").first();
     await expect(svg).toBeVisible();
-    const sizes = await svg.locator("text").evaluateAll((els) => els.map((e) => parseFloat(getComputedStyle(e).fontSize)));
+    const sizes = await svg.locator("xpath=ancestor::div[contains(@class, \"overflow-x-auto\")]").locator("text").evaluateAll((els) => els.map((e) => parseFloat(getComputedStyle(e).fontSize)));
     expect(sizes.length).toBe(132);
     expect(Math.min(...sizes)).toBeGreaterThanOrEqual(11);
     await svg.locator("rect").nth(66 * 3 + 39).dispatchEvent("click");
@@ -118,5 +118,40 @@ test.describe("fixes from the visual review", () => {
     await page.goto("./#/search?q=living%20water");
     await expect(page.getByTestId("result-count")).toBeVisible({ timeout: 30000 });
     await expect(page.locator("section[aria-label=Results] a").first()).toBeVisible();
+  });
+});
+
+test.describe("insights heat maps on a phone", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+  test("book flows keeps its row labels in view while scrolling sideways", async ({ page }) => {
+    await page.goto("./#/insights?tab=flows");
+    const grid = page.getByRole("img", { name: /^Heat grid/ });
+    await expect(grid).toBeVisible();
+    const result = await grid.evaluate(async (svg) => {
+      const box = svg.closest(".overflow-x-auto") as HTMLElement;
+      const label = box.querySelector("svg[aria-hidden] text") as SVGTextElement;
+      const left = () => label.getBoundingClientRect().left - box.getBoundingClientRect().left;
+      const before = left();
+      box.scrollLeft = 300;
+      await new Promise((r) => setTimeout(r, 200));
+      return { scrolled: box.scrollLeft, before, after: left() };
+    });
+    expect(result.scrolled, "the grid really scrolled").toBeGreaterThan(100);
+    expect(Math.abs(result.after - result.before), "row label did not move").toBeLessThan(1);
+  });
+});
+
+test.describe("site header is opaque", () => {
+  test.use({ viewport: { width: 1440, height: 900 }, colorScheme: "dark" });
+  test("no content shows through the header in dark mode on desktop", async ({ page }) => {
+    await page.goto("./#/read/john/3");
+    const header = page.locator("header").first();
+    await expect(header).toBeVisible();
+    const styles = await header.evaluate((e) => {
+      const s = getComputedStyle(e);
+      return { backgroundColor: s.backgroundColor, backdropFilter: s.backdropFilter };
+    });
+    expect(styles.backgroundColor).toMatch(/^rgb\(\d+, \d+, \d+\)$/);
+    expect(styles.backdropFilter).toBe("none");
   });
 });

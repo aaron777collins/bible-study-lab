@@ -2,7 +2,7 @@
 
 A free, private Bible study app for people who want to learn, share and grow. It runs entirely in your browser and is served as static files from GitHub Pages.
 
-**Live:** https://aaron777collins.github.io/bible-study-lab/
+**Live:** https://www.aaroncollins.info/bible-study-lab/
 
 ## What you can do
 

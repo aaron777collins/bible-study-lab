@@ -116,36 +116,44 @@ function BookFlows() {
   return (
     <div className="grid gap-4">
       <p className="sticky top-14 z-10 min-h-6 bg-page py-1 text-sm font-medium" role="status" data-testid="flow-readout">{readout}</p>
-      <div ref={box} className="max-w-full overflow-x-auto rounded-md border bg-surface p-2">
-        <svg width={padL + 66 * cell + 2} height={padT + 66 * cell + 2} role="img" aria-label="Heat grid of cross reference votes from each book (rows) to each book (columns). A table with the strongest pairs follows." style={{ display: "block" }} onPointerLeave={() => setPick(null)}>
-          {BOOKS.map((b, i) => (
-            <g key={b.osis} fontSize={11} fill="var(--ink-muted)" fontWeight={pick && (pick.r === i || pick.c === i) ? 700 : 400}>
-              <text x={padL + i * cell + cell / 2 + 4} y={padT - 5} textAnchor="start" transform={`rotate(-90 ${padL + i * cell + cell / 2 + 4} ${padT - 5})`}>{b.osis}</text>
-              <text x={padL - 4} y={padT + i * cell + cell / 2 + 4} textAnchor="end">{b.osis}</text>
-            </g>
-          ))}
-          {Array.from({ length: 66 * 66 }, (_, k) => {
-            const v = m[k];
-            const r = Math.floor(k / 66);
-            const c = k % 66;
-            return (
-              <rect
-                key={k}
-                x={padL + c * cell}
-                y={padT + r * cell}
-                width={cell - 1}
-                height={cell - 1}
-                fill={v > 0 ? shade(logScale(v, max)) : "var(--wash)"}
-                stroke={pick && pick.r === r && pick.c === c ? "var(--ink)" : undefined}
-                strokeWidth={pick && pick.r === r && pick.c === c ? 2 : undefined}
-                onPointerEnter={() => setPick({ r, c })}
-                onClick={() => setPick({ r, c })}
-              >
-                <title>{`${BOOKS[r].name} to ${BOOKS[c].name}: ${v.toLocaleString()} votes`}</title>
-              </rect>
-            );
-          })}
-        </svg>
+      <div ref={box} className="max-w-full overflow-x-auto rounded-md border bg-surface">
+        <div className="flex w-max py-2 pr-2" onPointerLeave={() => setPick(null)}>
+          <svg className="sticky left-0 z-10 bg-surface" aria-hidden="true" width={padL + 8} height={padT + 66 * cell + 2} style={{ display: "block" }}>
+            {BOOKS.map((b, i) => (
+              <g key={b.osis} fontSize={11} fill="var(--ink-muted)" fontWeight={pick && (pick.r === i || pick.c === i) ? 700 : 400}>
+                <text x={padL + 4} y={padT + i * cell + cell / 2 + 4} textAnchor="end">{b.osis}</text>
+              </g>
+            ))}
+          </svg>
+          <svg width={66 * cell + 2} height={padT + 66 * cell + 2} role="img" aria-label="Heat grid of cross reference votes from each book (rows) to each book (columns). A table with the strongest pairs follows." style={{ display: "block" }}>
+            {BOOKS.map((b, i) => (
+              <g key={b.osis} fontSize={11} fill="var(--ink-muted)" fontWeight={pick && (pick.r === i || pick.c === i) ? 700 : 400}>
+                <text x={i * cell + cell / 2 + 4} y={padT - 5} textAnchor="start" transform={`rotate(-90 ${i * cell + cell / 2 + 4} ${padT - 5})`}>{b.osis}</text>
+              </g>
+            ))}
+            {Array.from({ length: 66 * 66 }, (_, k) => {
+              const v = m[k];
+              const r = Math.floor(k / 66);
+              const c = k % 66;
+              return (
+                <rect
+                  key={k}
+                  x={c * cell}
+                  y={padT + r * cell}
+                  width={cell - 1}
+                  height={cell - 1}
+                  fill={v > 0 ? shade(logScale(v, max)) : "var(--wash)"}
+                  stroke={pick && pick.r === r && pick.c === c ? "var(--ink)" : undefined}
+                  strokeWidth={pick && pick.r === r && pick.c === c ? 2 : undefined}
+                  onPointerEnter={() => setPick({ r, c })}
+                  onClick={() => setPick({ r, c })}
+                >
+                  <title>{`${BOOKS[r].name} to ${BOOKS[c].name}: ${v.toLocaleString()} votes`}</title>
+                </rect>
+              );
+            })}
+          </svg>
+        </div>
       </div>
       <p className="text-sm text-muted-foreground">Rows are the book a link starts in, columns are where it points. The bright diagonal is links inside one book. Hover or tap a square for the numbers.</p>
       <details className="rounded-md border">
