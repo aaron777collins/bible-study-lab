@@ -1,6 +1,7 @@
 import { BOOKS } from "@/lib/canon/books";
 import { fromId, verseCount } from "@/lib/canon/canon";
 import { getJson } from "./load";
+import { NOTES_BOOKS } from "./notes.generated";
 
 export interface ChapterText {
   /** verse n is v[n - 1] */
@@ -18,8 +19,10 @@ export interface BookText {
 export type VerseNotes = [chapter: number, verse: number, notes: string[]][];
 
 export const loadBookText = (tr: string, book: number) => getJson<BookText>(`text/${tr}/${BOOKS[book].osis}.json`);
-export const loadBookNotes = (tr: string, book: number) =>
-  getJson<VerseNotes>(`text/${tr}/${BOOKS[book].osis}.notes.json`).catch(() => [] as VerseNotes);
+/** True when this translation has a footnotes file for the book. Only some books do, so the app asks for no others. */
+export const hasBookNotes = (tr: string, book: number): boolean => NOTES_BOOKS[tr]?.includes(BOOKS[book].osis) ?? false;
+export const loadBookNotes = (tr: string, book: number): Promise<VerseNotes> =>
+  hasBookNotes(tr, book) ? getJson<VerseNotes>(`text/${tr}/${BOOKS[book].osis}.notes.json`).catch(() => [] as VerseNotes) : Promise.resolve([]);
 
 export async function loadChapter(tr: string, book: number, chapter: number): Promise<ChapterText | undefined> {
   return (await loadBookText(tr, book)).c[chapter - 1];

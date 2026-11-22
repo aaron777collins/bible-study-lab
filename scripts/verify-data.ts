@@ -5,6 +5,7 @@ import zlib from "node:zlib";
 import { OUT } from "./lib.ts";
 import { BOOKS } from "../src/lib/canon/books.ts";
 import { VERSE_COUNTS } from "../src/lib/canon/versification.generated.ts";
+import { NOTES_BOOKS } from "../src/lib/data/notes.generated.ts";
 import { TOTAL_VERSES, idFromOsis, chapterCount, BOOK_START } from "../src/lib/canon/canon.ts";
 
 const errors: string[] = [];
@@ -39,6 +40,12 @@ for (const tr of manifest.translations as { id: string; verses: number }[]) {
   }
   // WEB has 31,103 verse slots because Romans 14 and 16 hold the closing doxology differently
   if (nonEmpty !== tr.verses) fail(`${tr.id}: ${nonEmpty} verse slots, manifest says ${tr.verses}`);
+}
+
+// The footnotes index lists exactly the notes files that exist
+for (const tr of manifest.translations as { id: string }[]) {
+  const onDisk = BOOKS.filter((b) => fs.existsSync(path.join(OUT, "text", tr.id, `${b.osis}.notes.json`))).map((b) => b.osis);
+  if (onDisk.join() !== (NOTES_BOOKS[tr.id] ?? []).join()) fail(`notes index out of date for ${tr.id}: run npm run data:build`);
 }
 
 // Spot checks

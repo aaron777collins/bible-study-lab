@@ -155,3 +155,25 @@ test.describe("site header is opaque", () => {
     expect(styles.backdropFilter).toBe("none");
   });
 });
+
+for (const scheme of ["light", "dark"] as const) {
+  for (const [label, viewport] of [["desktop", { width: 1440, height: 900 }], ["phone", { width: 390, height: 844 }]] as const) {
+    test.describe(`reader toolbar is opaque, ${scheme} ${label}`, () => {
+      test.use({ viewport, colorScheme: scheme });
+      test("no content shows through the toolbar after scrolling", async ({ page }) => {
+        await page.goto("./#/read/john/3");
+        await page.locator("#v1 button[data-vbtn]").waitFor();
+        await page.evaluate(() => window.scrollTo(0, 900));
+        await page.waitForTimeout(200);
+        const bar = page.getByTestId("reader-toolbar");
+        await expect(bar).toBeVisible();
+        const styles = await bar.evaluate((e) => {
+          const s = getComputedStyle(e);
+          return { backgroundColor: s.backgroundColor, backdropFilter: s.backdropFilter };
+        });
+        expect(styles.backgroundColor).toMatch(/^rgb\(\d+, \d+, \d+\)$/);
+        expect(styles.backdropFilter).toBe("none");
+      });
+    });
+  }
+}

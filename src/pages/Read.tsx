@@ -302,7 +302,7 @@ export function Component() {
       )}
       <div className="min-w-0 flex-1 px-4 pb-24 pt-4 md:px-8 md:pt-6">
         <NotesBanner className="mb-4 max-w-2xl" />
-        <div className="no-print sticky top-14 z-20 -mx-4 mb-4 flex flex-nowrap items-center gap-2 sm:flex-wrap border-b bg-page/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
+        <div data-testid="reader-toolbar" className="no-print sticky top-14 z-20 -mx-4 mb-4 flex flex-nowrap items-center gap-2 sm:flex-wrap border-b bg-page px-4 py-2 md:-mx-8 md:px-8">
           {!xl && (
             <Button variant="outline" onClick={() => setNavOpen(true)} className="min-w-0 shrink gap-2 px-3 font-semibold sm:px-4" aria-label={`${BOOKS[book].name} ${chapter}. Change book or chapter`}>
               <Library className="hidden shrink-0 sm:block" aria-hidden="true" /> <span className="truncate">{BOOKS[book].name} {chapter}</span>
@@ -454,7 +454,7 @@ export function Component() {
           <Button variant="ghost" className="flex-1 flex-col gap-0.5 h-auto py-1.5 text-xs" onClick={() => openTab("notes")} aria-label="Note"><NotebookPen aria-hidden="true" />Note</Button>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" className="flex-1 flex-col gap-0.5 h-auto py-1.5 text-xs" aria-label="Highlight"><Highlighter aria-hidden="true" />Mark</Button>
+              <Button variant="ghost" className="flex-1 flex-col gap-0.5 h-auto py-1.5 text-xs" aria-label="Mark with a highlight"><Highlighter aria-hidden="true" />Mark</Button>
             </PopoverTrigger>
             <PopoverContent side="top" className="w-auto">
               <Later><HighlightPicker ids={Array.from({ length: selEnd - selStart + 1 }, (_, i) => selStart + i)} current={hlMap.get(selStart)} /></Later>
